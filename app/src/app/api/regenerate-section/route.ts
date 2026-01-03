@@ -9,7 +9,7 @@ const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { currentContent, userPrompt, sectionType, modelId, apiKey, context } = body as {
+        const { currentContent, userPrompt, sectionType, modelId, apiKey: clientApiKey, context } = body as {
             currentContent: string;
             userPrompt: string;
             sectionType: 'intro' | 'hook' | 'bullets' | 'whyMatters' | 'whatsNext' | 'summary' | 'title';
@@ -17,6 +17,8 @@ export async function POST(request: NextRequest) {
             apiKey: string;
             context?: string; // Full story context for better regeneration
         };
+
+        const apiKey = clientApiKey || process.env.OPENROUTER_API_KEY || '';
 
         if (!apiKey) {
             return NextResponse.json(

@@ -1,10 +1,10 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
     console.log('API: generate-image called');
     try {
-        const { prompt, model, apiKey } = await request.json();
+        const { prompt, model, apiKey: clientApiKey } = await request.json();
+        const apiKey = clientApiKey || process.env.OPENROUTER_API_KEY || '';
         console.log('API: generate-image params:', { model, promptLength: prompt?.length });
 
         if (!prompt || !model || !apiKey) {

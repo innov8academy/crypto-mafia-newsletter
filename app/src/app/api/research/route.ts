@@ -8,11 +8,13 @@ import { CuratedStory } from '@/lib/types';
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { story, apiKey, modelId } = body as {
+        const { story, apiKey: clientApiKey, modelId } = body as {
             story: CuratedStory;
             apiKey: string;
             modelId?: ResearchModelId;
         };
+
+        const apiKey = clientApiKey || process.env.OPENROUTER_API_KEY || '';
 
         if (!story) {
             return NextResponse.json(

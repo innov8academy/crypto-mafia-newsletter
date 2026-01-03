@@ -8,11 +8,13 @@ import { ResearchReport } from '@/lib/types';
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { reports, apiKey, modelId } = body as {
+        const { reports, apiKey: clientApiKey, modelId } = body as {
             reports: ResearchReport[];
             apiKey: string;
             modelId?: DraftModelId;
         };
+
+        const apiKey = clientApiKey || process.env.OPENROUTER_API_KEY || '';
 
         if (!reports || reports.length === 0) {
             return NextResponse.json(

@@ -4,7 +4,9 @@ export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
     try {
-        const { topic, apiKey } = await req.json();
+        const { topic, apiKey: clientApiKey } = await req.json();
+
+        const apiKey = clientApiKey || process.env.OPENROUTER_API_KEY || '';
 
         if (!topic) {
             return NextResponse.json({ success: false, error: 'Topic is required' }, { status: 400 });

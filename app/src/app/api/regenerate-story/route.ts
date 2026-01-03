@@ -9,13 +9,15 @@ const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { currentStory, userPrompt, modelId, apiKey, context } = body as {
-            currentStory: any;
+        const { currentStory, userPrompt, modelId, apiKey: clientApiKey, context } = body as {
+            currentStory: string;
             userPrompt: string;
             modelId: DraftModelId;
             apiKey: string;
             context?: string;
         };
+
+        const apiKey = clientApiKey || process.env.OPENROUTER_API_KEY || '';
 
         if (!apiKey) {
             return NextResponse.json(

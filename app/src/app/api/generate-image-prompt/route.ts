@@ -1,10 +1,12 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
     console.log('API: generate-image-prompt called');
     try {
-        const { sectionText, styleContext, newsletterContext, apiKey } = await request.json();
+        const { sectionText, styleContext, newsletterContext, apiKey: clientApiKey } = await request.json();
+
+        const apiKey = clientApiKey || process.env.OPENROUTER_API_KEY || '';
+
         console.log('API: params received', { sectionLength: sectionText?.length });
 
         if (!sectionText || !apiKey) {

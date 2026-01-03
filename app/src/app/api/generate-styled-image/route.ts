@@ -5,7 +5,9 @@ export async function POST(request: NextRequest) {
     console.log('API: generate-styled-image called');
 
     try {
-        const { storyText, model, apiKey, useStyleRefs = true, useCreativePrompt = true, customPrompt } = await request.json();
+        const { storyText, model, apiKey: clientApiKey, useStyleRefs = true, useCreativePrompt = true, customPrompt } = await request.json();
+
+        const apiKey = clientApiKey || process.env.OPENROUTER_API_KEY || '';
 
         if (!storyText || !apiKey) {
             return NextResponse.json(
