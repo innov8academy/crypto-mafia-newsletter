@@ -306,22 +306,32 @@ export default function Home() {
         </nav>
 
         {/* API Input Overlay */}
-        {showApiInput && (
-          <div className="absolute top-20 right-8 z-20 bg-surface-elevated/95 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/50 p-5 rounded-xl w-80 animate-in-up deco-corner-tl">
-            <label className="text-xs uppercase tracking-wider text-white/50 font-medium mb-2 block">OpenRouter API Key</label>
-            <input
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="sk-or-..."
-              className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 mb-4 transition-all"
-            />
-            <div className="flex gap-2">
-              <Button size="sm" className="flex-1 bg-amber-500 hover:bg-amber-600 text-[#0B0B0F] font-semibold" onClick={handleSaveApiKey}>Save Key</Button>
-              <Button size="sm" variant="ghost" className="flex-1 text-white/60 hover:text-white" onClick={() => setShowApiInput(false)}>Cancel</Button>
+        <Dialog open={showApiInput} onOpenChange={setShowApiInput}>
+          <DialogContent className="bg-[#0B0B0F] border border-white/10 text-white max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Connect API (Optional)</DialogTitle>
+              <DialogDescription>
+                Enter your OpenRouter key manually, or leave blank if you set it on the server.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="space-y-2">
+                <label className="text-xs uppercase tracking-wider text-white/50 font-medium block">API Key</label>
+                <Input
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="sk-or-..."
+                  className="bg-black/40 border-white/10"
+                />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button variant="ghost" size="sm" onClick={() => setShowApiInput(false)}>Cancel</Button>
+                <Button size="sm" className="bg-amber-500 text-black hover:bg-amber-600" onClick={handleSaveApiKey}>Save Key</Button>
+              </div>
             </div>
-          </div>
-        )}
+          </DialogContent>
+        </Dialog>
 
         {/* Hero Section */}
         <main className="relative z-10 flex flex-col items-center justify-center h-[calc(100vh-100px)] text-center px-4">

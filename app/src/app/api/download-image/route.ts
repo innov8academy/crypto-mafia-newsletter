@@ -2,13 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // App Router: Config to allow larger bodies for base64 images
-export const config = {
-    api: {
-        bodyParser: {
-            sizeLimit: '50mb',
-        },
-    },
-};
+
 
 export async function POST(request: NextRequest) {
     try {
