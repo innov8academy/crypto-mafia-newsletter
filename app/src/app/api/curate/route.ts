@@ -17,11 +17,16 @@ export async function POST(request: Request) {
         // Run the smart curation
         const result = await curateNews(apiKey, undefined, customFeeds);
 
+        // Estimate cost (~$0.02 per curation with Gemini Flash)
+        const estimatedCost = 0.02;
+
         return NextResponse.json({
             success: true,
             count: result.stories.length,
             stories: result.stories,
-            stats: result.stats
+            stats: result.stats,
+            cost: estimatedCost,
+            costSource: 'curate'
         });
     } catch (error) {
         console.error('Curation error:', error);

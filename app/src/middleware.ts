@@ -25,6 +25,11 @@ export function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
+    // Allow login page without auth
+    if (request.nextUrl.pathname === '/login') {
+        return NextResponse.next();
+    }
+
     // Check for password cookie
     const authCookie = request.cookies.get('site-auth');
 

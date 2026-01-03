@@ -149,6 +149,8 @@ Rewrite the ${sectionType} according to the user's request. Return ONLY the rewr
                 success: true,
                 content: items.slice(0, 4), // Max 4 items
                 isArray: true,
+                cost: 0.01,
+                costSource: 'regen-section'
             });
         }
 
@@ -156,6 +158,8 @@ Rewrite the ${sectionType} according to the user's request. Return ONLY the rewr
             success: true,
             content: content.trim(),
             isArray: false,
+            cost: 0.01,
+            costSource: 'regen-section'
         });
 
     } catch (error) {

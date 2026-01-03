@@ -132,6 +132,8 @@ Rewrite the full story as a JSON object. Return ONLY the valid JSON, no markdown
             return NextResponse.json({
                 success: true,
                 story: newStory,
+                cost: 0.02,
+                costSource: 'regen-story'
             });
         } catch (e) {
             console.error('JSON Parse Error:', e);

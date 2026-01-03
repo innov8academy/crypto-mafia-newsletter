@@ -33,6 +33,7 @@ import {
   saveCustomFeeds,
 } from '@/lib/storage';
 import { MoveRight, Sparkles, Check, Play, Search, Clock, ExternalLink, BarChart3, Layers, FileText, ListChecks, ArrowRight, RefreshCw, Trash2, Plus, Settings2, X } from 'lucide-react';
+import { addCost } from '@/lib/cost-tracker';
 
 interface RSSFeed {
   name: string;
@@ -181,6 +182,15 @@ export default function Home() {
         setStories(data.stories);
         if (data.stats) setCurationStats(data.stats);
         setProgress(`Curated ${data.stories.length} high-impact stories`);
+        // Track cost
+        if (data.cost) {
+          addCost({
+            source: 'curate',
+            model: 'google/gemini-2.0-flash-001',
+            cost: data.cost,
+            description: 'News curation'
+          });
+        }
       } else {
         if (data.error === 'API key required') {
           setShowApiInput(true);

@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { NewsletterDraft, StoryBlock } from '@/lib/draft-generator';
 import { getApiKey } from '@/lib/storage';
+import { addCost } from '@/lib/cost-tracker';
+import { CostTracker } from '@/components/CostTracker';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -53,11 +55,12 @@ export default function StudioPage() {
         if (storedDraft) {
             setDraft(JSON.parse(storedDraft));
         } else {
-            // Redirect if no draft found?
-            // router.push('/draft');
+            // Flow protection: redirect to draft page if no draft exists
+            router.push('/draft');
+            return;
         }
         setApiKey(key || '');
-    }, []);
+    }, [router]);
 
     // Save draft update
     function updateDraft(newDraft: NewsletterDraft) {
@@ -249,6 +252,15 @@ export default function StudioPage() {
                 // Only update prompt if we DIDN'T have a custom one (i.e., it was auto-generated)
                 if (!hasCustomPrompt && data.prompt) {
                     setGeneratedPrompts(prev => ({ ...prev, [index]: data.prompt }));
+                }
+                // Track cost
+                if (data.cost) {
+                    addCost({
+                        source: 'image-gen',
+                        model: globalModel,
+                        cost: data.cost,
+                        description: `Image for Story ${index + 1}`
+                    });
                 }
             } else {
                 throw new Error('No image URL returned');
@@ -445,6 +457,9 @@ export default function StudioPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Cost Tracker - Fixed at bottom */}
+            <CostTracker targetEarnings={12.50} />
         </div>
     );
 }

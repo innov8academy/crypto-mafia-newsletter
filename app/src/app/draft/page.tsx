@@ -45,6 +45,7 @@ import {
     MoreHorizontal,
     Maximize2,
 } from 'lucide-react';
+import { addCost } from '@/lib/cost-tracker';
 
 // Image models moved to Studio Page
 
@@ -73,7 +74,12 @@ export default function DraftPage() {
         const key = getApiKey();
         setAllReports(reports);
         setApiKey(key || '');
-    }, []);
+
+        // Flow protection: redirect to research if no reports
+        if (reports.length === 0) {
+            router.push('/research');
+        }
+    }, [router]);
 
     // Auto-save draft to localStorage for Studio access
     useEffect(() => {
@@ -291,6 +297,15 @@ ${story.whatsNext.map(p => `• ${p}`).join('\n')}
 
             if (data.success && data.draft) {
                 setDraft(data.draft);
+                // Track cost
+                if (data.cost) {
+                    addCost({
+                        source: 'draft',
+                        model: selectedModel,
+                        cost: data.cost,
+                        description: `Draft generation (${selectedReports.length} stories)`
+                    });
+                }
             } else {
                 setError(data.error || 'Failed to generate draft');
             }

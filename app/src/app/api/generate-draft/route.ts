@@ -40,10 +40,15 @@ export async function POST(request: NextRequest) {
         console.log(`[Draft] Completed in ${duration}s - Success: ${result.success}`);
 
         if (result.success) {
+            // Estimate cost (~$0.03 base, scales with report count)
+            const estimatedCost = 0.03 * Math.max(1, reports.length * 0.5);
+
             return NextResponse.json({
                 success: true,
                 draft: result.draft,
                 duration: parseFloat(duration),
+                cost: estimatedCost,
+                costSource: 'draft'
             });
         } else {
             return NextResponse.json(

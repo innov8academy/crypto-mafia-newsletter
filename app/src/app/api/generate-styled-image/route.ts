@@ -104,11 +104,22 @@ Now create an image in THIS EXACT STYLE that visualizes: ${finalPrompt}`,
             }
         }
 
+        // Estimate cost based on model
+        const costMap: Record<string, number> = {
+            'google/gemini-3-pro-image-preview': 0.03,
+            'google/gemini-2.0-flash-001': 0.02,
+            'bytedance-seed/seedream-4.5': 0.02,
+            'black-forest-labs/flux-pro-1.1': 0.04,
+        };
+        const estimatedCost = costMap[selectedModel] || 0.03;
+
         return NextResponse.json({
             success: true,
             imageUrl,
             prompt: finalPrompt,
-            styleRefsUsed: styleImages.length
+            styleRefsUsed: styleImages.length,
+            cost: estimatedCost,
+            costSource: 'image-gen'
         });
 
     } catch (error) {

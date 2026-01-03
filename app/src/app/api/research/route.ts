@@ -39,10 +39,20 @@ export async function POST(request: NextRequest) {
         console.log(`[Research] Completed in ${duration}s - Success: ${result.success}`);
 
         if (result.success) {
+            // Estimate cost based on model
+            const costMap: Record<string, number> = {
+                'perplexity/sonar-deep-research': 0.15,
+                'perplexity/sonar-pro': 0.10,
+                'perplexity/sonar': 0.05,
+            };
+            const estimatedCost = costMap[modelId || 'perplexity/sonar-deep-research'] || 0.10;
+
             return NextResponse.json({
                 success: true,
                 report: result.report,
                 duration: parseFloat(duration),
+                cost: estimatedCost,
+                costSource: 'research'
             });
         } else {
             return NextResponse.json(

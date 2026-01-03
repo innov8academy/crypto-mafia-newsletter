@@ -45,6 +45,7 @@ import {
     Clock,
     Settings2,
 } from 'lucide-react';
+import { addCost } from '@/lib/cost-tracker';
 
 interface StoryResearchState {
     status: 'idle' | 'loading' | 'success' | 'error';
@@ -109,9 +110,15 @@ export default function ResearchPage() {
             setActiveReportId(loadedReports[0].story.id);
         }
 
+        // Flow protection: redirect to home if no stories selected
+        if (loadedIds.length === 0 && loadedReports.length === 0) {
+            router.push('/');
+            return;
+        }
+
         // Mark as mounted for client-side only rendering
         setIsMounted(true);
-    }, []);
+    }, [router]);
 
     // Get selected stories
     const selectedStories = stories.filter(s => selectedIds.has(s.id));
@@ -156,6 +163,16 @@ export default function ResearchPage() {
                     saveResearchReports(updated);
                     return updated;
                 });
+
+                // Track cost
+                if (data.cost) {
+                    addCost({
+                        source: 'research',
+                        model: selectedModel,
+                        cost: data.cost,
+                        description: `Research: ${story.headline.substring(0, 30)}...`
+                    });
+                }
 
                 setActiveReportId(story.id);
             } else {
