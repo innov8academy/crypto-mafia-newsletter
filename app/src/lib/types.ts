@@ -63,6 +63,18 @@ export interface NewsletterDraft {
   summary: string;
 }
 
+export interface ExtractedStory {
+  id: string;
+  headline: string;
+  summary: string;
+  category: string;
+  importance: number;
+  originalUrl: string | null;
+  sourceNewsletter: string;
+  sourceNewsletterUrl: string;
+  publishedAt: string;
+}
+
 export interface NewsletterSection {
   heading: string;
   imagePrompt: string;
