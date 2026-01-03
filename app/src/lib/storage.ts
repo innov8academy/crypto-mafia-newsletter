@@ -4,12 +4,12 @@
 import { CuratedStory, ResearchReport } from './types';
 
 const STORAGE_KEYS = {
-    CURATED_STORIES: 'innov8_curated_stories',
-    SELECTED_IDS: 'innov8_selected_ids',
-    RESEARCH_REPORTS: 'innov8_research_reports',
-    LAST_UPDATED: 'innov8_last_updated',
+    CURATED_STORIES: 'cryptomafia_curated_stories',
+    SELECTED_IDS: 'cryptomafia_selected_ids',
+    RESEARCH_REPORTS: 'cryptomafia_research_reports',
+    LAST_UPDATED: 'cryptomafia_last_updated',
     API_KEY: 'openrouter_api_key',
-    CUSTOM_FEEDS: 'innov8_custom_feeds',
+    CUSTOM_FEEDS: 'cryptomafia_custom_feeds',
 } as const;
 
 // Type for the complete persisted state

@@ -16,12 +16,12 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const systemPrompt = `You are an expert AI Art Director for a cutting-edge tech newsletter called "L8R by Innov8".
+        const systemPrompt = `You are an expert AI Art Director for a cutting-edge crypto newsletter called "L8R by Crypto Mafia".
 Your goal is to create a detailed, vivid, and stylistic image generation prompt based on a specific news section.
 
 **The Aesthetic (L8R Style):**
-- **Vibrant & Tech-Forward:** Use neon accents, glassmorphism, or clean futuristic lines.
-- **Conceptual:** specific objects from the news story should be central.
+- **Vibrant & Crypto-Forward:** Use neon accents, golden/orange tones, blockchain-inspired geometric shapes.
+- **Conceptual:** specific objects from the news story should be central (coins, charts, logos).
 - **Lighting:** Cinematic, dramatic, or studio lighting.
 - **Aspect Ratio:** 16:9 (Landscape).
 - **Avoid:** Generic "AI brain" stock photos, messy text, cluttered compositions.
@@ -48,8 +48,8 @@ ${newsletterContext ? `Newsletter Context: ${newsletterContext}` : ''}
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`,
-                'HTTP-Referer': 'https://innov8-newsletter.local',
-                'X-Title': 'Innov8 Image Prompter',
+                'HTTP-Referer': 'https://cryptomafia-newsletter.local',
+                'X-Title': 'Crypto Mafia Image Prompter',
             },
             body: JSON.stringify({
                 model: 'google/gemini-2.0-flash-001', // Fast, smart model for prompt engineering

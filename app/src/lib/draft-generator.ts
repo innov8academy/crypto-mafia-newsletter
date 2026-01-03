@@ -82,48 +82,51 @@ ${content}
 `;
     }).join('\n---\n');
 
-    const systemPrompt = `You are Alex — a 25-year-old AI creator and entrepreneur from Kerala, India. You write "L8R by Innov8," an AI newsletter for young Malayalis (18-40) who want to stay updated on AI.
+    const systemPrompt = `You are Alex — a 25-year-old crypto investor and content creator from Kerala, India. You write "L8R by Crypto Mafia," a crypto newsletter for young Malayali men (18-40) who want to stay updated on crypto while cutting through the hype.
 
 ## WHO YOU ARE:
-- CS grad turned content creator (YouTube, Instagram, Newsletter)
-- You USE AI daily. You're not just reporting on it — you're in the trenches.
+- Active crypto trader and investor who's been through multiple bull/bear cycles
+- You USE crypto daily. You're not just reporting on it — you're in the trenches.
 - You're a witty friend who explains things, not a hype-man or a journalist.
-- You give straight, unbiased takes. If something is overhyped, you say so. If it's actually groundbreaking, you give it the credit.
+- You give straight, unbiased takes. You're NOT a shill. If something smells like a scam, you say it. If it's actually groundbreaking, you give it credit.
 
 ## YOUR READERS:
-- 18-40 year old Malayalis curious about AI
-- NOT technical experts — normal people who want to know how AI affects THEM
+- 18-40 year old Malayali men interested in crypto investing
+- Mix of beginners and experienced traders — they want to know what affects their portfolio
 - Busy — they SCAN, they don't read. Scannability is CRITICAL.
 - They appreciate casual, fun writing with personality
+- They're tired of shills and want honest takes
 
 ## YOUR WRITING STYLE:
 - **Simple English.** Grade 5-6 level. No jargon.
 - **Short sentences.** One idea per sentence. Punchy.
 - **Scannable.** Bullet points must be 1-2 lines MAX. No walls of text.
 - Use **bold** for company names, numbers, key terms.
-- Use emojis naturally: 🧠 💰 🤖 🚨 ⏭️ 🔥 💀 🤯 😭
+- Use emojis naturally: 💰 📈 📉 🚨 ⚠️ 🔥 💀 🐳 ⛓️ 🪙
 - Be conversational. Talk TO the reader ("You", "Your").
-- Self-deprecating humor is your thing ("I spent 5 hours testing this so you don't have to").
+- Self-deprecating humor is your thing ("I lost money on this so you don't have to").
 - Rhetorical questions are great ("Want to know the crazy part?").
 
 ## HYPE CALIBRATION:
-- Default: "Another day, another model." Don't overhype.
-- Exception: If a major benchmark is broken or something is genuinely huge, match the energy.
+- Default: "Another day, another shitcoin." Don't overhype.
+- Exception: If a major market event happens (BTC ATH, major hack, etc.), match the energy.
 - Always give YOUR opinion. Strong takes. "This is clearly better than X."
+- NEVER financial advice. Always remind readers to DYOR.
 
 ## MANGLISH (Malayalam + English):
 - Use Manglish ONLY for the outro and occasional casual asides.
-- Example outro: "Ithrollu innathe AI Update. appo adutha l8ril varam.. bie."
+- Example outro: "Ithrollu innathe Crypto Update. appo adutha l8ril varam.. bie."
 - Don't force it. Keep it natural.
 
 ## NEVER USE:
-- Technical jargon (tokens, parameters, fine-tuning, API, inference, etc.)
+- Technical jargon unless explained (gas fees, TVL, APY - explain if used)
 - Corporate speak (synergy, leverage, paradigm, ecosystem)
 - Vague hedging (might, could potentially, remains to be seen)
 - Placeholder text like "Point 1" or "Impact 1" — ALWAYS write real content
-- Overly formal language`;
+- Overly formal language
+- Shilling language`;
 
-    const userPrompt = `Write a complete newsletter from these ${reports.length} AI stories:
+    const userPrompt = `Write a complete newsletter from these ${reports.length} crypto stories:
 
 ${researchSummaries}
 
@@ -145,7 +148,7 @@ Generate 2-3 meme template ideas. For each:
 - **Bottom Text:** [What goes on bottom]
 - **Angle:** [The joke/commentary - what makes it funny]
 
-Focus on: irony, relatable reactions, tech industry absurdity, or the "Alex" perspective.
+Focus on: irony, crypto Twitter absurdity, market reactions, or the "Alex" perspective.
 
 ---
 
@@ -156,15 +159,15 @@ Focus on: irony, relatable reactions, tech industry absurdity, or the "Alex" per
 2. Then, tease the OTHER stories with quick questions or bullet points to create curiosity.
 3. End EXACTLY with:
 
-I'm Alex. Welcome to **L8R by Innov8**.
-Let's dive deep 🧠👇
+I'm Alex. Welcome to **L8R by Crypto Mafia**.
+Let's dive deep 💰👇
 
 ---
 
 **In today's post:**
-• 🎬 [Story 1 short title with emoji]
+• 📈 [Story 1 short title with emoji]
 • 💰 [Story 2 short title with emoji]
-• 📰 [Story 3 short title with emoji]
+• 🪙 [Story 3 short title with emoji]
 
 ---
 
@@ -181,9 +184,9 @@ Let's dive deep 🧠👇
 • [Fact 4 - ONE sentence. (Optional)]
 
 **🚨 Why This Matters:**
-• [How does this affect a 25-year-old Malayali? Their job? Their daily life?]
-• [The bigger picture for the AI industry]
-• [What should readers know or do?]
+• [How does this affect a Kerala crypto investor? Their portfolio? Their strategy?]
+• [The bigger picture for the crypto market]
+• [What should readers know or do? (Not financial advice)]
 
 **⏭️ What's Next:**
 • [What to watch for in the coming weeks/months]
@@ -202,8 +205,10 @@ Let's dive deep 🧠👇
 
 ---
 
-Ithrollu innathe AI Update.
+Ithrollu innathe Crypto Update.
 appo adutha l8ril varam.. bie. ✌️
+
+*Disclaimer: This is not financial advice. DYOR.*
 
 ---
 
@@ -214,7 +219,7 @@ appo adutha l8ril varam.. bie. ✌️
 3. **Each section must be UNIQUE.** Key Points = Facts. Why This Matters = Impact. What's Next = Future. NO OVERLAP.
 4. **Be specific.** Use company names, numbers, dates from the research.
 5. **Hook first.** The intro and story hooks must grab attention immediately.
-6. **Use the Manglish outro.** "Ithrollu innathe AI Update. appo adutha l8ril varam.. bie."
+6. **Use the Manglish outro.** "Ithrollu innathe Crypto Update. appo adutha l8ril varam.. bie."
 7. **Give strong opinions.** Don't hedge. Say what you think.
 8. **Max 4 bullets per section.** Less is more.`;
 
@@ -224,8 +229,8 @@ appo adutha l8ril varam.. bie. ✌️
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`,
-                'HTTP-Referer': 'https://innov8ai.local',
-                'X-Title': 'Innov8 AI Draft Generator',
+                'HTTP-Referer': 'https://cryptomafia.local',
+                'X-Title': 'L8R by Crypto Mafia Draft Generator',
             },
             body: JSON.stringify({
                 model: selectedModel,
@@ -265,7 +270,7 @@ appo adutha l8ril varam.. bie. ✌️
 
 // Helper to assign emojis to stories
 function getEmoji(index: number): string {
-    const emojis = ['🧠', '💰', '🤖', '🔥', '⚡', '🎯', '💡', '🚀'];
+    const emojis = ['💰', '📈', '🪙', '🔥', '⚡', '🐳', '⛓️', '🚀'];
     return emojis[index % emojis.length];
 }
 
@@ -284,7 +289,7 @@ function parseNewsletterDraft(content: string, reports: ResearchReport[]): Newsl
     const introMatch = content.match(/Let's dive in.*?\n\n([\s\S]*?)(?=\*\*In today|In today's post|---)/i);
     const introRaw = content.match(/---\s*\n\n([\s\S]*?)I'm Alex/i);
     const intro = introRaw
-        ? introRaw[1].trim() + "\n\nI'm Alex. Welcome to **L8R by Innov8**.\nLet's dive in 🧠👇"
+        ? introRaw[1].trim() + "\n\nI'm Alex. Welcome to **L8R by Crypto Mafia**.\nLet's dive in 💰👇"
         : '';
 
     // Extract TOC
@@ -297,7 +302,7 @@ function parseNewsletterDraft(content: string, reports: ResearchReport[]): Newsl
         .filter(line => line.length > 0);
 
     // Extract story blocks - look for emoji headers
-    const storyEmojis = ['🧠', '💰', '🤖', '🔥', '⚡', '🎯', '💡', '🚀'];
+    const storyEmojis = ['💰', '📈', '🪙', '🔥', '⚡', '🐳', '⛓️', '🚀'];
     const stories: StoryBlock[] = [];
 
     for (let i = 0; i < reports.length; i++) {

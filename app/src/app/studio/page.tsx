@@ -192,7 +192,7 @@ export default function StudioPage() {
                 body: JSON.stringify({
                     sectionText: `${story.title}\n\n${story.hookParagraph}\n\n${story.bulletPoints.join('\n')}`,
                     styleContext: 'Tech-forward, vibrant, minimal UI elements, cinematic lighting, 16:9 aspect ratio',
-                    newsletterContext: 'L8R by Innov8 - Daily Tech Newsletter',
+                    newsletterContext: 'L8R by Crypto Mafia - Daily Crypto Newsletter',
                     apiKey
                 })
             });

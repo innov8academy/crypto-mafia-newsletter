@@ -24,8 +24,8 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Innov8 AI | Smart News Curation",
-  description: "AI-powered news curation for the modern researcher",
+  title: "L8R by Crypto Mafia | Smart Crypto Curation",
+  description: "AI-powered crypto news curation for Kerala investors",
 };
 
 export default function RootLayout({

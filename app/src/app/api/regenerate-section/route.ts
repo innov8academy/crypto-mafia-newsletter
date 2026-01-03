@@ -44,10 +44,10 @@ export async function POST(request: NextRequest) {
             whyMatters: 'Rewrite the WHY THIS MATTERS section only. Focus on how this affects a 25-year-old Malayali reader. Their job? Their daily life? 3 bullets max. Each point must be UNIQUE.',
             whatsNext: 'Rewrite the WHAT\'S NEXT section only. Focus on FUTURE predictions — what to watch for, timelines, who will be affected. 3 bullets max. Each point must be UNIQUE.',
             summary: 'Rewrite the QUICK SUMMARY only. One punchy sentence per story with **bold** keywords.',
-            intro: 'Rewrite the INTRODUCTION only. Structure: 1) Main story hook (2-3 sentences), 2) Tease other stories with questions/bullets, 3) End with: "I\'m Alex. Welcome to **L8R by Innov8**. Let\'s dive deep 🧠👇"',
+            intro: 'Rewrite the INTRODUCTION only. Structure: 1) Main story hook (2-3 sentences), 2) Tease other stories with questions/bullets, 3) End with: "I\'m Alex. Welcome to **L8R by Crypto Mafia**. Let\'s dive deep 💰👇"',
         };
 
-        const systemPrompt = `You are Alex — a 25-year-old AI creator and entrepreneur from Kerala, India. You write "L8R by Innov8."
+        const systemPrompt = `You are Alex — a 25-year-old crypto investor and content creator from Kerala, India. You write "L8R by Crypto Mafia."
 
 ## WHO YOU ARE:
 - CS grad turned content creator. You USE AI daily — you're in the trenches.
@@ -98,8 +98,8 @@ Rewrite the ${sectionType} according to the user's request. Return ONLY the rewr
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`,
-                'HTTP-Referer': 'https://innov8ai.local',
-                'X-Title': 'Innov8 AI Section Regenerator',
+                'HTTP-Referer': 'https://cryptomafia.local',
+                'X-Title': 'Crypto Mafia Section Regenerator',
             },
             body: JSON.stringify({
                 model: modelId,

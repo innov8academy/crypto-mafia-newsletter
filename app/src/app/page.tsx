@@ -242,9 +242,9 @@ export default function Home() {
         <nav className="relative z-10 flex items-center justify-between px-8 py-6">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg overflow-hidden shadow-glow-amber-sm">
-              <Image src="/logo.jpg" alt="Innov8 AI" width={40} height={40} className="object-cover" />
+              <Image src="/logo.png" alt="L8R by Crypto Mafia" width={40} height={40} className="object-cover" />
             </div>
-            <span className="font-display text-xl tracking-tight text-white/90">Innov8 AI</span>
+            <span className="font-display text-xl tracking-tight text-white/90">Crypto Mafia</span>
           </div>
           <div className="flex gap-4">
             <Dialog open={showSourcesDialog} onOpenChange={setShowSourcesDialog}>
@@ -421,9 +421,9 @@ export default function Home() {
         <div className="container flex h-16 items-center justify-between px-6">
           <div className="flex items-center gap-4">
             <div className="h-9 w-9 rounded-lg overflow-hidden">
-              <Image src="/logo.jpg" alt="Innov8 AI" width={36} height={36} className="object-cover" />
+              <Image src="/logo.png" alt="L8R by Crypto Mafia" width={36} height={36} className="object-cover" />
             </div>
-            <span className="font-display text-lg text-white/90">Innov8 AI</span>
+            <span className="font-display text-lg text-white/90">Crypto Mafia</span>
           </div>
 
           <div className="flex items-center gap-4">

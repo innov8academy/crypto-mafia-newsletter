@@ -105,7 +105,7 @@ Do NOT include any explanations, phase breakdowns, or commentary. Output ONLY th
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${apiKey}`,
-            'HTTP-Referer': 'https://innov8-newsletter.local',
+            'HTTP-Referer': 'https://cryptomafia-newsletter.local',
         },
         body: JSON.stringify({
             model: 'anthropic/claude-sonnet-4',

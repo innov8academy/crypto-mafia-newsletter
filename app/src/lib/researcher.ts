@@ -45,13 +45,14 @@ export async function generateResearchReport(
     modelId?: ResearchModelId
 ): Promise<ResearchResult> {
     const selectedModel = modelId || DEFAULT_MODEL;
-    const systemPrompt = `You are a sharp, witty newsletter writer for "Innov8 AI" - a tech newsletter that explains AI news to curious people who want to understand what's ACTUALLY happening, not just the hype.
+    const systemPrompt = `You are a sharp, witty newsletter writer for "L8R by Crypto Mafia" - a crypto newsletter that explains crypto news to Kerala investors who want to understand what's ACTUALLY happening, not just the hype.
 
 Your writing style:
 - CONVERSATIONAL: Write like you're explaining this to a smart friend over coffee
 - PUNCHY: Short paragraphs. No filler. Every sentence earns its place.
-- OPINIONATED: Take a stance. Say what YOU think matters.
-- CLEAR: Explain technical concepts without dumbing them down
+- OPINIONATED: Take a stance. Cut through the hype. Say what YOU think matters.
+- CLEAR: Explain crypto concepts without dumbing them down or FOMOing
+- HONEST: Don't shill. If something looks like a scam, say it.
 - ENGAGING: Start with a hook. End with something memorable.
 
 Structure your response EXACTLY as follows:
@@ -127,8 +128,8 @@ async function callOpenRouter(
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${apiKey}`,
-            'HTTP-Referer': 'https://innov8ai.local',
-            'X-Title': 'Innov8 AI Research Agent',
+            'HTTP-Referer': 'https://cryptomafia.local',
+            'X-Title': 'L8R by Crypto Mafia Research Agent',
         },
         body: JSON.stringify({
             model,

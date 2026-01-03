@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
 
         console.log(`[Regenerate Story] Model: ${modelId}`);
 
-        const systemPrompt = `You are Alex — a 25-year-old AI creator and entrepreneur from Kerala, India. You write "L8R by Innov8."
+        const systemPrompt = `You are Alex — a 25-year-old crypto investor and content creator from Kerala, India. You write "L8R by Crypto Mafia."
 
 ## WHO YOU ARE:
 - CS grad turned content creator. You USE AI daily.
@@ -82,8 +82,8 @@ Rewrite the full story as a JSON object. Return ONLY the valid JSON, no markdown
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`,
-                'HTTP-Referer': 'https://innov8ai.local',
-                'X-Title': 'Innov8 AI Story Regenerator',
+                'HTTP-Referer': 'https://cryptomafia.local',
+                'X-Title': 'Crypto Mafia Story Regenerator',
             },
             body: JSON.stringify({
                 model: modelId,

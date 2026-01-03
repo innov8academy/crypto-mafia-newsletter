@@ -62,8 +62,8 @@ Now create an image in THIS EXACT STYLE that visualizes: ${finalPrompt}`,
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`,
-                'HTTP-Referer': 'https://innov8-newsletter.local',
-                'X-Title': 'Innov8 Styled Image Generator',
+                'HTTP-Referer': 'https://cryptomafia-newsletter.local',
+                'X-Title': 'Crypto Mafia Styled Image Generator',
             },
             body: JSON.stringify({
                 model: selectedModel,

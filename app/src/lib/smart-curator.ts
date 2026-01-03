@@ -114,7 +114,7 @@ Return JSON array only.`;
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`,
                 'HTTP-Referer': 'http://localhost:3000',
-                'X-Title': 'Innov8 AI',
+                'X-Title': 'L8R by Crypto Mafia',
             },
             body: JSON.stringify({
                 model: 'google/gemini-2.0-flash-001',

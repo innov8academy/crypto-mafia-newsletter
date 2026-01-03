@@ -107,7 +107,7 @@ Extract the individual news stories as a JSON array. Return ONLY valid JSON, no 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`,
                 'HTTP-Referer': 'http://localhost:3000',
-                'X-Title': 'Innov8 AI Newsletter',
+                'X-Title': 'L8R by Crypto Mafia Newsletter',
             },
             body: JSON.stringify({
                 model: 'google/gemini-2.0-flash-001',

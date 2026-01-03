@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${apiKey}`,
-                    'HTTP-Referer': 'https://innov8-newsletter.local',
-                    'X-Title': 'Innov8 Image Generator',
+                    'HTTP-Referer': 'https://cryptomafia-newsletter.local',
+                    'X-Title': 'Crypto Mafia Image Generator',
                 },
                 body: JSON.stringify({
                     model: selectedModel,
@@ -84,8 +84,8 @@ export async function POST(request: NextRequest) {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${apiKey}`,
-                    'HTTP-Referer': 'https://innov8-newsletter.local',
-                    'X-Title': 'Innov8 Image Generator',
+                    'HTTP-Referer': 'https://cryptomafia-newsletter.local',
+                    'X-Title': 'Crypto Mafia Image Generator',
                 },
                 body: JSON.stringify({
                     model: selectedModel,

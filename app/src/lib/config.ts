@@ -1,125 +1,120 @@
 import { NewsletterConfig } from './types';
 
 export const defaultConfig: NewsletterConfig = {
-    name: "Innov8 AI",
-    tagline: "Stay Innov8, Stay AI",
+    name: "L8R by Crypto Mafia",
+    tagline: "Cut Through the Noise. Stay Crypto.",
     voiceGuidelines: `
-    - Write in Malayalam with English tech terms
+    - Write in Malayalam with English crypto terms
     - Casual, conversational tone
     - Use emojis liberally
     - Be enthusiastic but informative
-    - Focus on practical implications, not just announcements
+    - Focus on practical implications for Kerala crypto investors
+    - Cut through the hype - be honest about what matters
     - Add commentary and analysis, not just facts
   `,
     imageStylePrompt: `
-    Modern tech illustration style, vibrant gradients with purple and blue tones,
-    minimalist geometric shapes, futuristic feel, clean and professional,
-    suitable for AI/tech newsletter
+    Modern crypto/finance illustration style, vibrant gradients with orange and gold tones,
+    Bitcoin/blockchain-inspired geometric shapes, futuristic yet grounded feel,
+    suitable for crypto newsletter targeting young investors
   `,
     // Expanded RSS feeds - newsletters and news sources
     rssFeeds: [
         // =====================
-        // TIER 1: AI NEWSLETTERS (contain multiple stories - need extraction)
+        // TIER 1: CRYPTO NEWSLETTERS (contain multiple stories - need extraction)
         // =====================
         {
-            name: "The Rundown AI",
-            url: "https://rss.app/feeds/Kc554BCmk9PUValj.xml",
+            name: "Milk Road",
+            url: "https://rss.beehiiv.com/feeds/v3hqiCe5Vw.xml",
             category: "newsletter",
             tier: 1
         },
         {
-            name: "Ben's Bites",
-            url: "https://rss.app/feeds/O60XfEFYoxJhYVkS.xml",
+            name: "Bankless",
+            url: "https://rss.beehiiv.com/feeds/2aeCe5g0lR.xml",
             category: "newsletter",
             tier: 1
         },
         {
-            name: "The Neuron",
-            url: "https://rss.app/feeds/e2QjBpEDLPfVUeoI.xml",
+            name: "The Defiant",
+            url: "https://thedefiant.io/feed",
             category: "newsletter",
             tier: 1
         },
         {
-            name: "Superhuman AI",
-            url: "https://rss.app/feeds/3tDyvQwHp8cgL7qs.xml",
+            name: "Blockworks Daily",
+            url: "https://blockworks.co/feed",
             category: "newsletter",
             tier: 1
         },
         {
-            name: "Futurepedia",
-            url: "https://rss.app/feeds/x8T02B3GXYy18pNy.xml",
+            name: "TLDR Crypto",
+            url: "https://tldr.tech/crypto/rss",
             category: "newsletter",
             tier: 1
         },
         {
-            name: "TAAFT Newsletter",
-            url: "https://rss.beehiiv.com/feeds/22I6c0vJXV.xml",
-            category: "newsletter",
-            tier: 1
-        },
-        {
-            name: "TLDR AI",
-            url: "https://tldr.tech/ai/rss",
+            name: "The Pomp Letter",
+            url: "https://pomp.substack.com/feed",
             category: "newsletter",
             tier: 1
         },
         // =====================
-        // TIER 2: TECH NEWS SITES (single stories per item)
+        // TIER 2: CRYPTO NEWS SITES (single stories per item)
         // =====================
         {
-            name: "TechCrunch AI",
-            url: "https://techcrunch.com/category/artificial-intelligence/feed/",
+            name: "CoinDesk",
+            url: "https://www.coindesk.com/arc/outboundfeeds/rss/",
             category: "news",
             tier: 2
         },
         {
-            name: "The Verge AI",
-            url: "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+            name: "Cointelegraph",
+            url: "https://cointelegraph.com/rss",
             category: "news",
             tier: 2
         },
         {
-            name: "VentureBeat AI",
-            url: "https://venturebeat.com/category/ai/feed/",
+            name: "Decrypt",
+            url: "https://decrypt.co/feed",
             category: "news",
             tier: 2
         },
         {
-            name: "Ars Technica AI",
-            url: "https://feeds.arstechnica.com/arstechnica/technology-lab",
+            name: "The Block",
+            url: "https://www.theblock.co/rss.xml",
             category: "news",
             tier: 2
         },
         {
-            name: "Wired AI",
-            url: "https://www.wired.com/feed/tag/ai/latest/rss",
+            name: "CryptoSlate",
+            url: "https://cryptoslate.com/feed/",
             category: "news",
             tier: 2
         },
         {
-            name: "MIT News AI",
-            url: "https://news.mit.edu/topic/artificial-intelligence2-rss.xml",
+            name: "Bitcoin Magazine",
+            url: "https://bitcoinmagazine.com/.rss/full/",
             category: "news",
             tier: 2
         },
         // =====================
-        // TIER 3: RESEARCH & OFFICIAL BLOGS
+        // TIER 3: OFFICIAL BLOGS & RESEARCH
         // =====================
         {
-            name: "OpenAI Blog",
-            url: "https://openai.com/blog/rss/",
+            name: "Ethereum Blog",
+            url: "https://blog.ethereum.org/feed.xml",
             category: "blog",
             tier: 3
         },
         {
-            name: "Google AI Blog",
-            url: "https://blog.google/technology/ai/rss/",
+            name: "a16z Crypto",
+            url: "https://a16zcrypto.com/posts/feed/",
             category: "blog",
             tier: 3
         },
         {
-            name: "Anthropic News",
-            url: "https://www.anthropic.com/news/rss",
+            name: "Messari Research",
+            url: "https://messari.io/rss",
             category: "blog",
             tier: 3
         },
@@ -127,8 +122,8 @@ export const defaultConfig: NewsletterConfig = {
         // TIER 4: COMMUNITY / SOCIAL
         // =====================
         {
-            name: "Hacker News AI",
-            url: "https://hnrss.org/newest?q=AI+OR+GPT+OR+LLM+OR+Claude+OR+OpenAI&points=50",
+            name: "Hacker News Crypto",
+            url: "https://hnrss.org/newest?q=Bitcoin+OR+Ethereum+OR+crypto+OR+blockchain&points=50",
             category: "social",
             tier: 4
         },
@@ -136,32 +131,38 @@ export const defaultConfig: NewsletterConfig = {
         // REDDIT COMMUNITIES (Sorted by Top Daily to capture high engagement)
         // =====================
         {
-            name: "r/ArtificialInteligence",
-            url: "https://www.reddit.com/r/ArtificialInteligence/top/.rss?t=day",
+            name: "r/CryptoCurrency",
+            url: "https://www.reddit.com/r/CryptoCurrency/top/.rss?t=day",
             category: "social",
             tier: 4
         },
         {
-            name: "r/LocalLLaMA",
-            url: "https://www.reddit.com/r/LocalLLaMA/top/.rss?t=day",
+            name: "r/Bitcoin",
+            url: "https://www.reddit.com/r/Bitcoin/top/.rss?t=day",
             category: "social",
             tier: 4
         },
         {
-            name: "r/MachineLearning",
-            url: "https://www.reddit.com/r/MachineLearning/top/.rss?t=day",
+            name: "r/Ethereum",
+            url: "https://www.reddit.com/r/ethereum/top/.rss?t=day",
             category: "social",
             tier: 4
         },
         {
-            name: "r/OpenAI",
-            url: "https://www.reddit.com/r/OpenAI/top/.rss?t=day",
+            name: "r/CryptoMarkets",
+            url: "https://www.reddit.com/r/CryptoMarkets/top/.rss?t=day",
             category: "social",
             tier: 4
         },
         {
-            name: "r/Singularity",
-            url: "https://www.reddit.com/r/singularity/top/.rss?t=day",
+            name: "r/altcoin",
+            url: "https://www.reddit.com/r/altcoin/top/.rss?t=day",
+            category: "social",
+            tier: 4
+        },
+        {
+            name: "r/defi",
+            url: "https://www.reddit.com/r/defi/top/.rss?t=day",
             category: "social",
             tier: 4
         }
@@ -176,9 +177,11 @@ export const SCORING_CONFIG = {
         threePlusSources: 2
     },
     categoryBoost: {
-        model_release: 1,
-        acquisition: 1,
-        major_update: 1
+        price_movement: 1,      // Major price changes
+        regulation: 1,          // Government/regulatory news
+        exchange_news: 1,       // CEX/DEX updates
+        defi_update: 1,         // DeFi protocol changes
+        security_breach: 2,     // Hacks, exploits (high priority)
     },
     recencyBoostHours: 12, // Stories newer than this get +1
     tierWeight: {
@@ -190,27 +193,27 @@ export const SCORING_CONFIG = {
 };
 
 // Prompt for extracting and scoring news stories
-export const SMART_CURATION_PROMPT = `You are an expert AI news curator for the "Innov8 AI" newsletter.
-Target Audience: Normal people interested in AI (not just researchers). They want to know "what happened" and "why it matters".
+export const SMART_CURATION_PROMPT = `You are an expert crypto news curator for the "L8R by Crypto Mafia" newsletter.
+Target Audience: 18-40 year old men in Kerala interested in crypto investing. They want to know "what happened" and "why it matters to their portfolio".
 
 TASK: Analyze this content and extract individual news stories.
 
 For EACH distinct news story, provide:
 1. headline: Clear, engaging headline (max 12 words) - specific and punchy
-2. summary: A 3-4 sentence explanation covering: WHAT happened? and WHY it matters to a normal person? Avoid jargon.
-3. category: One of [model_release, tool_launch, acquisition, research, funding, regulation, tutorial, industry, company_news]
+2. summary: A 3-4 sentence explanation covering: WHAT happened? and WHY it matters to a crypto investor? Avoid excessive jargon.
+3. category: One of [price_movement, exchange_news, defi_update, nft_news, regulation, security_breach, funding, partnership, protocol_upgrade, market_analysis]
 4. baseScore: Score 1-10 based on importance to the general public:
-   - 9-10: Mainstream news (GPT-5, deepfakes law, major job market shifts)
-   - 7-8: Big tools normal people use (ChatGPT updates, heavy hitters), major breakthroughs
-   - 5-6: Interesting new apps, useful tutorials, industry trends
-   - 3-4: Niche developer tools, minor updates, enterprise-only news
+   - 9-10: Major market events (BTC ATH, major exchange collapse, landmark regulation)
+   - 7-8: Significant protocol updates, major exchange news, whale movements
+   - 5-6: DeFi updates, new token launches, partnership announcements
+   - 3-4: Minor altcoin news, NFT drops, community governance votes
    - 1-2: Spam, irrelevant, promotional only
 5. entities: List of companies/products mentioned
 6. originalUrl: Source URL if mentioned
 
 RULES:
 - Extract SEPARATE stories, not the whole newsletter
-- Focus on the "Normal Person" angle in the summary
+- Focus on the "Kerala Crypto Investor" angle in the summary
 - Skip: job posts, sponsor sections, "also check out" links
 - Max 6 stories per source
 
