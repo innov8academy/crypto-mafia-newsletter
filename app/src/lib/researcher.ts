@@ -10,6 +10,7 @@ const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 export const RESEARCH_MODELS = [
     // Deep Research Specialists (have web access or agentic research capability)
     { id: 'perplexity/sonar-deep-research', name: 'Perplexity Sonar Deep Research', description: '🔥 Best for deep web research', category: 'research' },
+    { id: 'x-ai/grok-4.1-fast', name: 'Grok 4.1 Fast', description: '💰 10x cheaper + reasoning', category: 'research' },
     { id: 'google/gemini-3-pro-preview', name: 'Gemini 3 Pro', description: 'Google flagship - 1M context', category: 'research' },
     { id: 'alibaba/tongyi-deepresearch-30b-a3b', name: 'Tongyi DeepResearch', description: 'Alibaba deep research agent', category: 'research' },
 

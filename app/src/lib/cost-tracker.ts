@@ -6,6 +6,7 @@
 // Updated based on OpenRouter pricing page
 export const MODEL_PRICING: Record<string, { inputPer1M: number; outputPer1M: number; perImage?: number }> = {
     // Text models (used for curation, research, drafts)
+    'x-ai/grok-4.1-fast': { inputPer1M: 0.20, outputPer1M: 0.50 },
     'google/gemini-2.0-flash-001': { inputPer1M: 0.10, outputPer1M: 0.40 },
     'google/gemini-2.5-flash-preview': { inputPer1M: 0.15, outputPer1M: 0.60 },
     'google/gemini-3-pro-preview': { inputPer1M: 1.25, outputPer1M: 10.00 },

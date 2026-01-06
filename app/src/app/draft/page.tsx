@@ -78,6 +78,29 @@ export default function DraftPage() {
         // Flow protection: redirect to research if no reports
         if (reports.length === 0) {
             router.push('/research');
+            return;
+        }
+
+        // Restore draft from localStorage (for persistence when navigating between pages)
+        const storedDraft = localStorage.getItem('currentDraft');
+        if (storedDraft) {
+            try {
+                const parsedDraft = JSON.parse(storedDraft);
+                setDraft(parsedDraft);
+            } catch (e) {
+                console.error('Failed to parse stored draft:', e);
+            }
+        }
+
+        // Restore selectedReports from localStorage
+        const storedSelectedReports = localStorage.getItem('selectedReports');
+        if (storedSelectedReports) {
+            try {
+                const parsedReports = JSON.parse(storedSelectedReports);
+                setSelectedReports(parsedReports);
+            } catch (e) {
+                console.error('Failed to parse stored selected reports:', e);
+            }
         }
     }, [router]);
 
@@ -87,6 +110,13 @@ export default function DraftPage() {
             localStorage.setItem('currentDraft', JSON.stringify(draft));
         }
     }, [draft]);
+
+    // Auto-save selectedReports to localStorage for persistence
+    useEffect(() => {
+        if (selectedReports.length > 0) {
+            localStorage.setItem('selectedReports', JSON.stringify(selectedReports));
+        }
+    }, [selectedReports]);
 
     // Update draft field
     function updateDraft(field: keyof NewsletterDraft, value: string) {
