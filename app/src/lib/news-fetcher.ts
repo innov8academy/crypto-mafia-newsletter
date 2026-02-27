@@ -18,12 +18,93 @@ function generateId(title: string, url: string): string {
     return Math.abs(hash).toString(36);
 }
 
+// Check if a URL is a Reddit feed
+function isRedditFeed(url: string): boolean {
+    return url.includes('reddit.com') || url.includes('/r/');
+}
+
+// Fetch Reddit posts using Jina (bypasses Reddit's blocking of server-side RSS)
+async function fetchRedditViaJina(feed: RSSFeed): Promise<NewsItem[]> {
+    try {
+        const redditUrl = feed.url.replace('/.rss', '').replace('.rss', '');
+        console.log(`[Reddit via Jina] Fetching ${feed.name}: ${redditUrl}`);
+
+        const jinaResponse = await fetch(`https://r.jina.ai/${redditUrl}`, {
+            headers: { 'Accept': 'text/plain' }
+        });
+
+        if (!jinaResponse.ok) {
+            console.error(`[Reddit via Jina] Failed for ${feed.name}: ${jinaResponse.status}`);
+            return [];
+        }
+
+        const markdown = await jinaResponse.text();
+        const posts: NewsItem[] = [];
+        const lines = markdown.split('\n');
+
+        let currentTitle = '';
+        let currentUrl = '';
+        let currentContent = '';
+
+        for (const line of lines) {
+            const linkMatch = line.match(/^\[(.+?)\]\((https:\/\/(?:www\.)?reddit\.com\/r\/[^\)]+)\)/);
+            if (linkMatch) {
+                if (currentTitle && currentUrl) {
+                    posts.push({
+                        id: generateId(currentTitle, currentUrl),
+                        title: currentTitle,
+                        url: currentUrl,
+                        source: feed.url,
+                        sourceName: feed.name,
+                        publishedAt: new Date().toISOString(),
+                        summary: cleanText(currentContent).substring(0, 500),
+                        imageUrl: '',
+                        author: '',
+                        content: cleanText(currentContent),
+                    });
+                }
+                currentTitle = linkMatch[1];
+                currentUrl = linkMatch[2];
+                currentContent = '';
+            } else if (currentTitle && line.trim()) {
+                currentContent += ' ' + line;
+            }
+        }
+
+        if (currentTitle && currentUrl) {
+            posts.push({
+                id: generateId(currentTitle, currentUrl),
+                title: currentTitle,
+                url: currentUrl,
+                source: feed.url,
+                sourceName: feed.name,
+                publishedAt: new Date().toISOString(),
+                summary: cleanText(currentContent).substring(0, 500),
+                imageUrl: '',
+                author: '',
+                content: cleanText(currentContent),
+            });
+        }
+
+        console.log(`[Reddit via Jina] Got ${posts.length} posts from ${feed.name}`);
+        return posts.slice(0, 10);
+    } catch (error) {
+        console.error(`[Reddit via Jina] Error for ${feed.name}:`, error);
+        return [];
+    }
+}
+
 // Parse RSS feed and extract news items
 async function parseRSSFeed(feed: RSSFeed): Promise<NewsItem[]> {
+    // Use Jina for Reddit feeds (Reddit blocks most RSS requests from servers)
+    if (isRedditFeed(feed.url)) {
+        return fetchRedditViaJina(feed);
+    }
+
     try {
         const response = await fetch(feed.url, {
             headers: {
-                'User-Agent': 'InnovateAI-Newsletter/1.0',
+                'User-Agent': 'Mozilla/5.0 (compatible; NewsBot/1.0)',
             },
             next: { revalidate: 300 } // Cache for 5 minutes
         });
@@ -33,8 +114,15 @@ async function parseRSSFeed(feed: RSSFeed): Promise<NewsItem[]> {
             return [];
         }
 
-        const xml = await response.text();
-        const parsed = parser.parse(xml);
+        const text = await response.text();
+
+        // Check if response is actually XML (not HTML error page)
+        if (text.includes('<!DOCTYPE html>') || text.includes('<html') || text.includes("You've been blocked")) {
+            console.error(`[RSS Blocked] ${feed.name} returned HTML instead of RSS`);
+            return [];
+        }
+
+        const parsed = parser.parse(text);
 
         // Handle both RSS 2.0 and Atom formats
         const items = parsed.rss?.channel?.item || parsed.feed?.entry || [];
@@ -53,12 +141,16 @@ async function parseRSSFeed(feed: RSSFeed): Promise<NewsItem[]> {
                 imageUrl = item.enclosure['@_url'];
             }
 
-            // Extract summary/description
+            // Extract summary/description — also check content:encoded (many feeds include full article here)
+            const contentEncoded = item['content:encoded'] || '';
             const summary = item.description?.['#text'] ||
                 item.description ||
                 item.summary?.['#text'] ||
                 item.summary ||
                 '';
+
+            // Use content:encoded if available and longer than summary
+            const bestContent = contentEncoded.length > summary.length ? contentEncoded : summary;
 
             return {
                 id: generateId(title, url),
@@ -67,9 +159,10 @@ async function parseRSSFeed(feed: RSSFeed): Promise<NewsItem[]> {
                 source: feed.url,
                 sourceName: feed.name,
                 publishedAt: new Date(pubDate).toISOString(),
-                summary: cleanText(summary).substring(0, 300),
+                summary: cleanText(bestContent).substring(0, 500),
                 imageUrl,
                 author: item.author || item['dc:creator'] || '',
+                content: cleanText(bestContent), // Store full content for extraction
             };
         });
     } catch (error) {
@@ -95,7 +188,7 @@ function cleanText(text: string): string {
         .replace(/&#8211;/g, '–')
         .replace(/&#8212;/g, '—')
         .replace(/&nbsp;/g, ' ')
-        .replace(/&#\d+;/g, '') // Remove any remaining numeric entities
+        .replace(/&#\d+;/g, '')
         .trim();
 }
 
@@ -122,7 +215,21 @@ export async function fetchAllNews(feeds: RSSFeed[]): Promise<NewsItem[]> {
         return true;
     });
 
-    return deduplicated;
+    // STRICT: Only keep items from the last 24 hours
+    const oneDayAgo = new Date();
+    oneDayAgo.setHours(oneDayAgo.getHours() - 24);
+
+    const fresh = deduplicated.filter(item => {
+        const pubDate = new Date(item.publishedAt);
+        // If date is invalid or in the future, keep it (likely fresh)
+        if (isNaN(pubDate.getTime())) return true;
+        if (pubDate > new Date()) return true;
+        return pubDate >= oneDayAgo;
+    });
+
+    console.log(`[News] ${deduplicated.length} total → ${fresh.length} from last 24h (dropped ${deduplicated.length - fresh.length} stale)`);
+
+    return fresh;
 }
 
 // Filter news by date (last N days)

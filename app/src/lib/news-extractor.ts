@@ -1,5 +1,6 @@
 import { NewsItem, ExtractedStory } from './types';
 import { SMART_CURATION_PROMPT } from './config';
+import { scrapeUrl } from './firecrawl';
 
 interface ExtractedStoryRaw {
     headline: string;
@@ -21,38 +22,11 @@ function generateStoryId(headline: string, source: string): string {
     return Math.abs(hash).toString(36);
 }
 
-// Scrape content from a URL using a simple fetch
-async function scrapeUrl(url: string): Promise<string | null> {
+// Scrape content from a URL using intelligent Cheerio + Jina pipeline
+async function scrapeUrlContent(url: string): Promise<string | null> {
     try {
-        const response = await fetch(url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            },
-        });
-
-        if (!response.ok) {
-            console.error(`Failed to scrape ${url}: ${response.status}`);
-            return null;
-        }
-
-        const html = await response.text();
-
-        // Simple HTML to text conversion - remove tags and decode entities
-        const text = html
-            .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-            .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-            .replace(/<[^>]*>/g, ' ')
-            .replace(/&nbsp;/g, ' ')
-            .replace(/&amp;/g, '&')
-            .replace(/&lt;/g, '<')
-            .replace(/&gt;/g, '>')
-            .replace(/&quot;/g, '"')
-            .replace(/&#39;/g, "'")
-            .replace(/\s+/g, ' ')
-            .trim();
-
-        // Return first 15000 chars to stay within token limits
-        return text.substring(0, 15000);
+        const result = await scrapeUrl(url);
+        return result.content || null;
     } catch (error) {
         console.error(`Error scraping ${url}:`, error);
         return null;
@@ -68,7 +42,7 @@ export async function extractStoriesFromNewsletter(
     let content = newsletter.content || newsletter.summary || '';
 
     if (content.length < 500 && newsletter.url) {
-        const scraped = await scrapeUrl(newsletter.url);
+        const scraped = await scrapeUrlContent(newsletter.url);
         if (scraped) {
             content = scraped;
         }

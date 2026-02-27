@@ -1,6 +1,7 @@
 import { NewsItem, CuratedStory, CurationProgress } from './types';
 import { defaultConfig, SCORING_CONFIG, SMART_CURATION_PROMPT } from './config';
 import { fetchAllNews, filterByDate } from './news-fetcher';
+import { scrapeUrl } from './firecrawl';
 
 interface RawExtractedStory {
     headline: string;
@@ -45,27 +46,11 @@ function calculateSimilarity(text1: string, text2: string): number {
     return intersection.size / union.size;
 }
 
-// Scrape content from URL
+// Scrape content from URL using intelligent Cheerio + Jina pipeline
 async function scrapeContent(url: string): Promise<string | null> {
     try {
-        const response = await fetch(url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            },
-        });
-
-        if (!response.ok) return null;
-
-        const html = await response.text();
-        return html
-            .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-            .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-            .replace(/<[^>]*>/g, ' ')
-            .replace(/&nbsp;/g, ' ')
-            .replace(/&amp;/g, '&')
-            .replace(/\s+/g, ' ')
-            .trim()
-            .substring(0, 12000);
+        const result = await scrapeUrl(url);
+        return result.content || null;
     } catch {
         return null;
     }

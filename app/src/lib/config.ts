@@ -17,32 +17,26 @@ export const defaultConfig: NewsletterConfig = {
     Bitcoin/blockchain-inspired geometric shapes, futuristic yet grounded feel,
     suitable for crypto newsletter targeting young investors
   `,
-    // Expanded RSS feeds - newsletters and news sources
     rssFeeds: [
         // =====================
-        // TIER 1: CRYPTO NEWSLETTERS (contain multiple stories - need extraction)
+        // TIER 1: CRYPTO NEWSLETTERS (HIGH VALUE — each contains 5-10 curated stories)
         // =====================
+        // Active daily newsletters
         {
-            name: "Milk Road",
-            url: "https://rss.beehiiv.com/feeds/v3hqiCe5Vw.xml",
+            name: "The Pomp Letter",
+            url: "https://pomp.substack.com/feed",
             category: "newsletter",
             tier: 1
         },
         {
-            name: "Bankless",
-            url: "https://rss.beehiiv.com/feeds/2aeCe5g0lR.xml",
+            name: "Wu Blockchain",
+            url: "https://wublock.substack.com/feed",
             category: "newsletter",
             tier: 1
         },
         {
-            name: "The Defiant",
-            url: "https://thedefiant.io/feed",
-            category: "newsletter",
-            tier: 1
-        },
-        {
-            name: "Blockworks Daily",
-            url: "https://blockworks.co/feed",
+            name: "DeFi Weekly",
+            url: "https://defiweekly.substack.com/feed",
             category: "newsletter",
             tier: 1
         },
@@ -53,13 +47,20 @@ export const defaultConfig: NewsletterConfig = {
             tier: 1
         },
         {
-            name: "The Pomp Letter",
-            url: "https://pomp.substack.com/feed",
+            name: "Blockworks Daily",
+            url: "https://blockworks.co/feed",
             category: "newsletter",
             tier: 1
         },
+        {
+            name: "The Defiant",
+            url: "https://thedefiant.io/feed",
+            category: "newsletter",
+            tier: 1
+        },
+
         // =====================
-        // TIER 2: CRYPTO NEWS SITES (single stories per item)
+        // TIER 2: CRYPTO NEWS SITES (single stories, high volume, very fresh)
         // =====================
         {
             name: "CoinDesk",
@@ -86,29 +87,42 @@ export const defaultConfig: NewsletterConfig = {
             tier: 2
         },
         {
-            name: "CryptoSlate",
-            url: "https://cryptoslate.com/feed/",
-            category: "news",
-            tier: 2
-        },
-        {
             name: "Bitcoin Magazine",
             url: "https://bitcoinmagazine.com/.rss/full/",
             category: "news",
             tier: 2
         },
+        {
+            name: "AMBCrypto",
+            url: "https://ambcrypto.com/feed/",
+            category: "news",
+            tier: 2
+        },
+        {
+            name: "U.Today",
+            url: "https://u.today/rss",
+            category: "news",
+            tier: 2
+        },
+        {
+            name: "CryptoBriefing",
+            url: "https://cryptobriefing.com/feed/",
+            category: "news",
+            tier: 2
+        },
+        {
+            name: "CoinGape",
+            url: "https://coingape.com/feed/",
+            category: "news",
+            tier: 2
+        },
+
         // =====================
-        // TIER 3: OFFICIAL BLOGS & RESEARCH
+        // TIER 3: OFFICIAL BLOGS & RESEARCH (primary sources — important signals)
         // =====================
         {
             name: "Ethereum Blog",
             url: "https://blog.ethereum.org/feed.xml",
-            category: "blog",
-            tier: 3
-        },
-        {
-            name: "a16z Crypto",
-            url: "https://a16zcrypto.com/posts/feed/",
             category: "blog",
             tier: 3
         },
@@ -118,8 +132,9 @@ export const defaultConfig: NewsletterConfig = {
             category: "blog",
             tier: 3
         },
+
         // =====================
-        // TIER 4: COMMUNITY / SOCIAL
+        // TIER 4: COMMUNITY / SOCIAL (Reddit via Jina fallback)
         // =====================
         {
             name: "Hacker News Crypto",
@@ -127,9 +142,6 @@ export const defaultConfig: NewsletterConfig = {
             category: "social",
             tier: 4
         },
-        // =====================
-        // REDDIT COMMUNITIES (Sorted by Top Daily to capture high engagement)
-        // =====================
         {
             name: "r/CryptoCurrency",
             url: "https://www.reddit.com/r/CryptoCurrency/top/.rss?t=day",
@@ -155,12 +167,6 @@ export const defaultConfig: NewsletterConfig = {
             tier: 4
         },
         {
-            name: "r/altcoin",
-            url: "https://www.reddit.com/r/altcoin/top/.rss?t=day",
-            category: "social",
-            tier: 4
-        },
-        {
             name: "r/defi",
             url: "https://www.reddit.com/r/defi/top/.rss?t=day",
             category: "social",
@@ -169,7 +175,7 @@ export const defaultConfig: NewsletterConfig = {
     ]
 };
 
-// Scoring configuration
+// Scoring configuration — tuned for crypto audience
 export const SCORING_CONFIG = {
     minScoreToShow: 6,
     crossSourceBoost: {
@@ -177,43 +183,50 @@ export const SCORING_CONFIG = {
         threePlusSources: 2
     },
     categoryBoost: {
-        price_movement: 1,      // Major price changes
-        regulation: 1,          // Government/regulatory news
-        exchange_news: 1,       // CEX/DEX updates
+        security_breach: 2,     // Hacks are CRITICAL — affects portfolios
+        price_movement: 1.5,    // Price = attention
+        regulation: 1.5,        // Regulation moves markets
+        protocol_upgrade: 1,    // Technical but important
+        exchange_news: 1,       // CEX/DEX news
         defi_update: 1,         // DeFi protocol changes
-        security_breach: 2,     // Hacks, exploits (high priority)
-    },
-    recencyBoostHours: 12, // Stories newer than this get +1
+    } as Record<string, number>,
+    recencyBoostHours: 12,
     tierWeight: {
-        1: 1.0,  // Newsletters
-        2: 0.9,  // News sites
-        3: 1.1,  // Official blogs (important)
+        1: 1.3,  // Newsletters (highest — curated, multi-story, most value)
+        2: 0.7,  // News sites (lower — single stories, often rehashed across sites)
+        3: 1.1,  // Official blogs (primary sources)
         4: 0.8   // Social
-    }
+    } as Record<number, number>
 };
 
 // Prompt for extracting and scoring news stories
-export const SMART_CURATION_PROMPT = `You are an expert crypto news curator for the "L8R by Crypto Mafia" newsletter.
-Target Audience: 18-40 year old men in Kerala interested in crypto investing. They want to know "what happened" and "why it matters to their portfolio".
+export const SMART_CURATION_PROMPT = `You are curating crypto news for "L8R by Crypto Mafia" — a newsletter for Kerala crypto investors.
+Target Audience: 18-40 year old men in Kerala interested in crypto investing. They want "what happened" and "why it matters to MY portfolio".
 
-TASK: Analyze this content and extract individual news stories.
+TASK: Extract individual news stories that matter to crypto investors.
 
 For EACH distinct news story, provide:
-1. headline: Clear, engaging headline (max 12 words) - specific and punchy
-2. summary: A 3-4 sentence explanation covering: WHAT happened? and WHY it matters to a crypto investor? Avoid excessive jargon.
+1. headline: Clear, punchy headline (max 12 words) — specific, not clickbait
+2. summary: 3-4 sentences covering: WHAT happened? WHY should a crypto investor care? Include specific details (prices, dates, what changed).
 3. category: One of [price_movement, exchange_news, defi_update, nft_news, regulation, security_breach, funding, partnership, protocol_upgrade, market_analysis]
-4. baseScore: Score 1-10 based on importance to the general public:
-   - 9-10: Major market events (BTC ATH, major exchange collapse, landmark regulation)
+4. baseScore: Score 1-10 based on importance:
+   - 9-10: Major market events (BTC ATH, exchange collapse, landmark regulation)
    - 7-8: Significant protocol updates, major exchange news, whale movements
    - 5-6: DeFi updates, new token launches, partnership announcements
    - 3-4: Minor altcoin news, NFT drops, community governance votes
    - 1-2: Spam, irrelevant, promotional only
-5. entities: List of companies/products mentioned
+5. entities: List of companies/products/tokens mentioned
 6. originalUrl: Source URL if mentioned
+
+SCORING BOOSTS:
++1 if affects BTC, ETH, SOL, or MATIC (commonly held in India)
++1 if has Indian regulatory/market angle
+-2 if just a corporate announcement with no shipping date
+-1 if opinion/prediction with no actual news
 
 RULES:
 - Extract SEPARATE stories, not the whole newsletter
-- Focus on the "Kerala Crypto Investor" angle in the summary
+- Focus on the "Kerala Crypto Investor" angle
 - Skip: job posts, sponsor sections, "also check out" links
 - Max 6 stories per source
 
