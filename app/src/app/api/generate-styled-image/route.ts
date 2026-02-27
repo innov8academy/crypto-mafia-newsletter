@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const selectedModel = model || 'google/gemini-3-pro-image-preview';
+        const selectedModel = model || 'google/gemini-3.1-flash-image-preview';
 
         // Step 1: Use custom prompt if provided, otherwise generate one
         let finalPrompt = storyText;
@@ -106,6 +106,7 @@ Now create an image in THIS EXACT STYLE that visualizes: ${finalPrompt}`,
 
         // Estimate cost based on model
         const costMap: Record<string, number> = {
+            'google/gemini-3.1-flash-image-preview': 0.01,
             'google/gemini-3-pro-image-preview': 0.03,
             'google/gemini-2.0-flash-001': 0.02,
             'bytedance-seed/seedream-4.5': 0.02,
