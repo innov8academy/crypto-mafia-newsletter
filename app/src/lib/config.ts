@@ -19,9 +19,9 @@ export const defaultConfig: NewsletterConfig = {
   `,
     rssFeeds: [
         // =====================
-        // TIER 1: CRYPTO NEWSLETTERS (HIGH VALUE — each contains 5-10 curated stories)
+        // TIER 1: CRYPTO NEWSLETTERS (HIGH VALUE — curated multi-story digests)
+        // These are ACTUAL newsletters that compile multiple stories per issue
         // =====================
-        // Active daily newsletters
         {
             name: "The Pomp Letter",
             url: "https://pomp.substack.com/feed",
@@ -46,21 +46,13 @@ export const defaultConfig: NewsletterConfig = {
             category: "newsletter",
             tier: 1
         },
-        {
-            name: "Blockworks Daily",
-            url: "https://blockworks.co/feed",
-            category: "newsletter",
-            tier: 1
-        },
-        {
-            name: "The Defiant",
-            url: "https://thedefiant.io/feed",
-            category: "newsletter",
-            tier: 1
-        },
+        // ⚠️ NEEDS RSS.APP PROXY — Alex to set up:
+        // Milk Road, Bankless, The Daily Ape, Coinbase Bytes
+        // These newsletters block direct RSS. Need rss.app feeds.
 
         // =====================
-        // TIER 2: CRYPTO NEWS SITES (single stories, high volume, very fresh)
+        // TIER 2: CRYPTO NEWS SITES — HIGH VOLUME (single stories, very fresh, many per day)
+        // These are the workhorses — lots of content, post 10-50x/day
         // =====================
         {
             name: "CoinDesk",
@@ -93,14 +85,26 @@ export const defaultConfig: NewsletterConfig = {
             tier: 2
         },
         {
-            name: "AMBCrypto",
-            url: "https://ambcrypto.com/feed/",
+            name: "BeInCrypto",
+            url: "https://beincrypto.com/feed/",
             category: "news",
             tier: 2
         },
         {
-            name: "U.Today",
-            url: "https://u.today/rss",
+            name: "CryptoNews",
+            url: "https://cryptonews.com/news/feed/",
+            category: "news",
+            tier: 2
+        },
+        {
+            name: "DL News",
+            url: "https://www.dlnews.com/arc/outboundfeeds/rss/",
+            category: "news",
+            tier: 2
+        },
+        {
+            name: "Unchained",
+            url: "https://unchainedcrypto.com/feed/",
             category: "news",
             tier: 2
         },
@@ -111,14 +115,62 @@ export const defaultConfig: NewsletterConfig = {
             tier: 2
         },
         {
+            name: "U.Today",
+            url: "https://u.today/rss",
+            category: "news",
+            tier: 2
+        },
+        {
+            name: "AMBCrypto",
+            url: "https://ambcrypto.com/feed/",
+            category: "news",
+            tier: 2
+        },
+        {
+            name: "Bitcoinist",
+            url: "https://bitcoinist.com/feed/",
+            category: "news",
+            tier: 2
+        },
+        {
+            name: "NewsBTC",
+            url: "https://www.newsbtc.com/feed/",
+            category: "news",
+            tier: 2
+        },
+        {
+            name: "CoinJournal",
+            url: "https://coinjournal.net/feed/",
+            category: "news",
+            tier: 2
+        },
+        {
+            name: "Protos",
+            url: "https://protos.com/feed/",
+            category: "news",
+            tier: 2
+        },
+        {
             name: "CoinGape",
             url: "https://coingape.com/feed/",
             category: "news",
             tier: 2
         },
+        {
+            name: "The Defiant",
+            url: "https://thedefiant.io/feed",
+            category: "news",
+            tier: 2
+        },
+        {
+            name: "Blockworks",
+            url: "https://blockworks.co/feed",
+            category: "news",
+            tier: 2
+        },
 
         // =====================
-        // TIER 3: OFFICIAL BLOGS & RESEARCH (primary sources — important signals)
+        // TIER 3: OFFICIAL BLOGS & RESEARCH (primary sources — rare but high signal)
         // =====================
         {
             name: "Ethereum Blog",
@@ -175,27 +227,27 @@ export const defaultConfig: NewsletterConfig = {
     ]
 };
 
-// Scoring configuration — tuned for crypto audience
+// Scoring configuration — NEWSLETTERS GET 2x WEIGHT
 export const SCORING_CONFIG = {
-    minScoreToShow: 6,
+    minScoreToShow: 5, // Lowered from 6 to surface more newsletter stories
     crossSourceBoost: {
         twoSources: 1,
         threePlusSources: 2
     },
     categoryBoost: {
-        security_breach: 2,     // Hacks are CRITICAL — affects portfolios
-        price_movement: 1.5,    // Price = attention
-        regulation: 1.5,        // Regulation moves markets
-        protocol_upgrade: 1,    // Technical but important
-        exchange_news: 1,       // CEX/DEX news
-        defi_update: 1,         // DeFi protocol changes
+        security_breach: 2,
+        price_movement: 1.5,
+        regulation: 1.5,
+        protocol_upgrade: 1,
+        exchange_news: 1,
+        defi_update: 1,
     } as Record<string, number>,
     recencyBoostHours: 12,
     tierWeight: {
-        1: 1.3,  // Newsletters (highest — curated, multi-story, most value)
-        2: 0.7,  // News sites (lower — single stories, often rehashed across sites)
-        3: 1.1,  // Official blogs (primary sources)
-        4: 0.8   // Social
+        1: 2.0,  // Newsletters — HIGHEST. Curated, multi-story, most valuable
+        2: 0.6,  // News sites — LOW. Single stories, often rehashed across sites
+        3: 1.2,  // Official blogs — important primary sources
+        4: 0.7   // Social — community signal
     } as Record<number, number>
 };
 

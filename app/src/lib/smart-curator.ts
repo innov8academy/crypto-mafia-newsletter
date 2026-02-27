@@ -166,28 +166,34 @@ export async function curateNews(
         }
     });
 
-    // INTELLIGENT BALANCING: Ensure representation from all tiers
-    // Instead of just taking the newest 20, we take:
-    // - Up to 2 newest items from EACH source (to ensure breadth)
-    // - Then fill the rest with the absolute newest remaining
+    // NEWSLETTER-FIRST BALANCING
+    // Newsletters are the most valuable — each issue contains 5-10 curated stories.
+    // News sites just have 1 story each and often rehash the same thing.
+    // Strategy:
+    // 1. Take ALL newsletter items first (tier 1) — they're already curated
+    // 2. Then fill with news sites, blogs, and social (limited per source)
     const candidateItems: NewsItem[] = [];
     const seenUrls = new Set<string>();
 
-    // 1. Quota Round: Take up to 2 items per source
+    // Build source → feed mapping to know tiers
+    const feedTierMap = new Map<string, number>();
+    allFeeds.forEach(f => feedTierMap.set(f.name, f.tier || 2));
+
     const itemsBySource = new Map<string, NewsItem[]>();
     allNews.forEach(item => {
         if (!itemsBySource.has(item.sourceName)) itemsBySource.set(item.sourceName, []);
         itemsBySource.get(item.sourceName)?.push(item);
     });
 
-    const QUOTA_PER_SOURCE = 2;
-    // Iterate through all sources to fill quota
+    // 1. NEWSLETTERS FIRST: Take ALL items from Tier 1 (newsletters)
     for (const [source, items] of itemsBySource) {
-        // Sort items by date (newest first) just in case
-        items.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+        const tier = feedTierMap.get(source) || 2;
+        if (tier !== 1) continue;
 
-        const quotaItems = items.slice(0, QUOTA_PER_SOURCE);
-        quotaItems.forEach(item => {
+        items.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+        // Take up to 5 items per newsletter (they contain multi-story digests)
+        const newsletterItems = items.slice(0, 5);
+        newsletterItems.forEach(item => {
             if (!seenUrls.has(item.url)) {
                 candidateItems.push(item);
                 seenUrls.add(item.url);
@@ -195,20 +201,38 @@ export async function curateNews(
         });
     }
 
-    // 2. Fill Round: If we have space left for the hard limit (e.g. 20), fill with newest ignoring source
-    const TOTAL_LIMIT = 20;
-    if (candidateItems.length < TOTAL_LIMIT) {
-        const remainingNeeded = TOTAL_LIMIT - candidateItems.length;
-        const remainingItems = allNews
-            .filter(item => !seenUrls.has(item.url))
-            .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
-            .slice(0, remainingNeeded);
+    console.log(`[Curator] Newsletter items: ${candidateItems.length}`);
 
-        candidateItems.push(...remainingItems);
+    // 2. FILL: Add news sites, blogs, social (2 per source, up to limit)
+    const TOTAL_LIMIT = 30; // Increased from 20 to handle more sources
+    const QUOTA_PER_NON_NEWSLETTER = 2;
+
+    for (const [source, items] of itemsBySource) {
+        const tier = feedTierMap.get(source) || 2;
+        if (tier === 1) continue; // Already handled
+
+        if (candidateItems.length >= TOTAL_LIMIT) break;
+
+        items.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+        const quotaItems = items.slice(0, QUOTA_PER_NON_NEWSLETTER);
+        quotaItems.forEach(item => {
+            if (!seenUrls.has(item.url) && candidateItems.length < TOTAL_LIMIT) {
+                candidateItems.push(item);
+                seenUrls.add(item.url);
+            }
+        });
     }
 
-    // Sort candidates by date again so we process in order
-    candidateItems.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+    // Sort candidates: newsletters first, then by date
+    candidateItems.sort((a, b) => {
+        const tierA = feedTierMap.get(a.sourceName) || 2;
+        const tierB = feedTierMap.get(b.sourceName) || 2;
+        // Tier 1 (newsletters) always first
+        if (tierA === 1 && tierB !== 1) return -1;
+        if (tierA !== 1 && tierB === 1) return 1;
+        // Within same tier, sort by date
+        return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+    });
 
     // Stage 2: Extract stories from each item
     const totalToProcess = Math.min(candidateItems.length, TOTAL_LIMIT);
