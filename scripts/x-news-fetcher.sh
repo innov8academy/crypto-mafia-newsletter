@@ -27,14 +27,22 @@ trap "rm -rf $TEMP_DIR" EXIT
 mkdir -p "$OUTPUT_DIR"
 echo "[$(date -u)] Starting X crypto news fetch..."
 
-# SOURCE 1: Search for crypto trending topics
+# SOURCE 1: X's trending news (catch any crypto trending topics)
 echo "[Fetch] Getting X trending news..."
 $BIRD news -n 30 --json > "$TEMP_DIR/trending_general.json" 2>/dev/null || echo "[]" > "$TEMP_DIR/trending_general.json"
 sleep 2
 
-# SOURCE 2: Search crypto-specific terms
-echo "[Fetch] Searching crypto keywords on X..."
-$BIRD search "Bitcoin OR Ethereum OR crypto OR DeFi OR blockchain" -n 20 --json > "$TEMP_DIR/crypto_search.json" 2>/dev/null || echo "[]" > "$TEMP_DIR/crypto_search.json"
+# SOURCE 2-5: Targeted crypto searches (the real content source)
+echo "[Fetch] Searching Bitcoin + Ethereum news..."
+$BIRD search "Bitcoin OR Ethereum news -filter:replies" -n 15 --json > "$TEMP_DIR/search1.json" 2>/dev/null || echo "[]" > "$TEMP_DIR/search1.json"
+sleep 2
+
+echo "[Fetch] Searching DeFi + altcoin news..."
+$BIRD search "crypto OR DeFi OR Solana news -filter:replies" -n 15 --json > "$TEMP_DIR/search2.json" 2>/dev/null || echo "[]" > "$TEMP_DIR/search2.json"
+sleep 2
+
+echo "[Fetch] Searching crypto regulation + ETF..."
+$BIRD search "crypto regulation OR Bitcoin ETF OR SEC crypto -filter:replies" -n 10 --json > "$TEMP_DIR/search3.json" 2>/dev/null || echo "[]" > "$TEMP_DIR/search3.json"
 
 # Process and save
 echo "[Process] Processing trending items..."
@@ -76,10 +84,40 @@ def is_crypto(text):
     t = text.lower()
     return any(kw in t for kw in CRYPTO_KEYWORDS)
 
+# Spam/scam patterns to filter out
+SPAM_PATTERNS = {
+    'dm for', 'dm me', 'signal group', 'trading signal', 'free signal',
+    'join our', 'click here', 'check link', 'recovery help', 'recovery service',
+    'send me', 'giveaway', 'airdrop claim', 'claim your', 'congratulations',
+    'pump signal', 'guaranteed profit', '100x', '1000x', 'get rich',
+    'limited time', 'act now', 'hurry up', 'dont miss', "don't miss",
+    'scam alert', 'fraudulent', 'caution', 'warning ⚠', '⚠️ caution',
+    'alpha 🎯', '🎯 alpha', 'check 👉', '💎 gem', 'moonshot',
+    # Note: t.co links removed from spam filter — trending headlines often have links
+}
+
+def is_spam(text):
+    t = text.lower()
+    # Too short = probably not a real news headline
+    if len(t) < 20:
+        return True
+    # Non-English heavy content (French, etc)
+    if any(w in t for w in ['le ', 'la ', 'les ', 'des ', 'une ', 'est ', 'avec ']):
+        return True
+    # Mostly links
+    if t.count('http') >= 2:
+        return True
+    # Spam patterns
+    return any(p in t for p in SPAM_PATTERNS)
+
 # Combine feeds and filter to crypto-only
-all_trending = safe_load(f"{temp_dir}/trending_general.json") + safe_load(f"{temp_dir}/crypto_search.json")
+all_trending = (safe_load(f"{temp_dir}/trending_general.json") +
+                safe_load(f"{temp_dir}/search1.json") +
+                safe_load(f"{temp_dir}/search2.json") +
+                safe_load(f"{temp_dir}/search3.json"))
 items = []
 skipped = 0
+spam_filtered = 0
 for item in all_trending:
     # Handle both trending (headline) and search (text) formats
     text = item.get('headline', '') or item.get('text', '') or item.get('full_text', '')
@@ -87,6 +125,9 @@ for item in all_trending:
         continue
     if not is_crypto(text):
         skipped += 1
+        continue
+    if is_spam(text):
+        spam_filtered += 1
         continue
     items.append({
         'id': make_id(text),
@@ -100,6 +141,8 @@ for item in all_trending:
 
 if skipped:
     print(f"[Filter] Dropped {skipped} non-crypto items")
+if spam_filtered:
+    print(f"[Filter] Dropped {spam_filtered} spam/scam items")
 
 # Deduplicate
 seen = set()
@@ -132,12 +175,17 @@ fi
 
 echo "[$(date -u)] Pushing to Supabase x_news table..."
 
-# Delete old X news
-curl -s -o /dev/null -w "Delete: %{http_code}\n" \
-  "${SUPABASE_URL}/rest/v1/x_news?headline=neq.KEEP_NONE" \
-  -X DELETE \
-  -H "apikey: ${SUPABASE_KEY}" \
-  -H "Authorization: Bearer ${SUPABASE_KEY}"
+# Delete old X news (with retry for Cloudflare 525)
+for attempt in 1 2 3; do
+  DEL_CODE=$(curl -s -o /dev/null -w "%{http_code}" --retry 2 \
+    "${SUPABASE_URL}/rest/v1/x_news?headline=neq.KEEP_NONE" \
+    -X DELETE \
+    -H "apikey: ${SUPABASE_KEY}" \
+    -H "Authorization: Bearer ${SUPABASE_KEY}")
+  echo "Delete attempt $attempt: $DEL_CODE"
+  [ "$DEL_CODE" = "204" ] && break
+  sleep 2
+done
 
 # Build JSON rows from the cached file and insert
 python3 -c "
@@ -157,15 +205,18 @@ for item in data['items'][:20]:
 print(json.dumps(rows))
 " > /tmp/x_news_rows.json
 
-INSERTED=$(curl -s -w "\n%{http_code}" \
-  "${SUPABASE_URL}/rest/v1/x_news" \
-  -H "apikey: ${SUPABASE_KEY}" \
-  -H "Authorization: Bearer ${SUPABASE_KEY}" \
-  -H "Content-Type: application/json" \
-  -H "Prefer: return=representation,resolution=merge-duplicates" \
-  -d @/tmp/x_news_rows.json)
-
-echo "[Supabase] Insert response: $(echo "$INSERTED" | tail -1)"
+for attempt in 1 2 3; do
+  INS_CODE=$(curl -s -o /dev/null -w "%{http_code}" --retry 2 \
+    "${SUPABASE_URL}/rest/v1/x_news" \
+    -H "apikey: ${SUPABASE_KEY}" \
+    -H "Authorization: Bearer ${SUPABASE_KEY}" \
+    -H "Content-Type: application/json" \
+    -H "Prefer: return=representation,resolution=merge-duplicates" \
+    -d @/tmp/x_news_rows.json)
+  echo "Insert attempt $attempt: $INS_CODE"
+  [ "$INS_CODE" = "201" ] && break
+  sleep 2
+done
 rm -f /tmp/x_news_rows.json
 
 echo "[$(date -u)] X crypto news fetch complete."

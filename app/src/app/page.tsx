@@ -237,6 +237,56 @@ export default function Home() {
     }
   }
 
+  // Simple headline similarity check
+  function calculateHeadlineSimilarity(a: string, b: string): number {
+    const wordsA = new Set(a.split(' ').filter(w => w.length > 3));
+    const wordsB = new Set(b.split(' ').filter(w => w.length > 3));
+    if (wordsA.size === 0 || wordsB.size === 0) return 0;
+    const intersection = [...wordsA].filter(w => wordsB.has(w));
+    return intersection.length / Math.max(wordsA.size, wordsB.size);
+  }
+
+  async function findMoreNews() {
+    setLoading(true);
+    setProgress('Finding more stories...');
+
+    try {
+      const response = await fetch('/api/curate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey, customFeeds }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const existingIds = new Set(stories.map(s => s.id));
+        const newStories = data.stories.filter((s: CuratedStory) => !existingIds.has(s.id));
+
+        if (newStories.length > 0) {
+          const existingHeadlines = stories.map(s => s.headline.toLowerCase());
+          const trulyNew = newStories.filter((s: CuratedStory) => {
+            const normalized = s.headline.toLowerCase();
+            return !existingHeadlines.some((h: string) => calculateHeadlineSimilarity(normalized, h) > 0.6);
+          });
+
+          setStories(prev => [...prev, ...trulyNew]);
+          setProgress(`Found ${trulyNew.length} new stories`);
+        } else {
+          setProgress('No new stories found');
+        }
+
+        if (data.stats) setCurationStats(data.stats);
+      } else {
+        setProgress(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      setProgress('Failed to find more news');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function toggleSelect(story: CuratedStory) {
     setSelectedIds(prev => {
       const newSet = new Set(prev);
@@ -585,6 +635,17 @@ export default function Home() {
               <Trash2 className="w-4 h-4 mr-2" />
               Clear All
             </Button>
+            {stories.length > 0 && (
+              <Button
+                className="bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 border border-teal-500/20 hover:border-teal-500/30"
+                size="sm"
+                onClick={findMoreNews}
+                disabled={loading}
+              >
+                <Plus className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                {loading ? 'Finding...' : 'Find More'}
+              </Button>
+            )}
             <Button
               className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 hover:border-amber-500/30"
               size="sm"
