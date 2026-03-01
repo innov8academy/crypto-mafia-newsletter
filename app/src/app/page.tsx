@@ -321,7 +321,7 @@ export default function Home() {
     setCustomFeeds([]); // Also clear custom feeds? Maybe keep them? Let's clear for "Clear All" semantic.
   }
 
-  // Combine selected stories from both Top Stories and X news
+  // Combine selected stories from both Top Stories and X news (v2)
   const selectedStoryItems = stories.filter(s => selectedIds.has(s.id));
   const selectedXItems = xNews
     .filter(item => selectedIds.has(`x_${item.id}`))
