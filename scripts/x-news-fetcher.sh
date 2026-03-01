@@ -131,61 +131,41 @@ if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_KEY:-}" ]; then
 fi
 
 echo "[$(date -u)] Pushing to Supabase x_news table..."
-export SUPABASE_URL SUPABASE_KEY OUTPUT_FILE
 
-python3 << 'PYEOF'
-import json, urllib.request, os
+# Delete old X news
+curl -s -o /dev/null -w "Delete: %{http_code}\n" \
+  "${SUPABASE_URL}/rest/v1/x_news?headline=neq.KEEP_NONE" \
+  -X DELETE \
+  -H "apikey: ${SUPABASE_KEY}" \
+  -H "Authorization: Bearer ${SUPABASE_KEY}"
 
-output_file = os.environ['OUTPUT_FILE']
-url = os.environ['SUPABASE_URL']
-key = os.environ['SUPABASE_KEY']
-
-with open(output_file) as f:
+# Build JSON rows from the cached file and insert
+python3 -c "
+import json
+with open('${OUTPUT_FILE}') as f:
     data = json.load(f)
-
-# Delete old X news first
-try:
-    req = urllib.request.Request(
-        f"{url}/rest/v1/x_news?fetched_at=lt.{data['fetched_at']}",
-        method='DELETE',
-        headers={'apikey': key, 'Authorization': f'Bearer {key}'}
-    )
-    urllib.request.urlopen(req)
-    print("[Supabase] Cleared old X news")
-except Exception as e:
-    print(f"[Supabase] Delete error: {e}")
-
-# Insert new items
 rows = []
 for item in data['items'][:20]:
     rows.append({
-        'text': item['text'][:500],
-        'author': item.get('author', 'X_Trending'),
-        'url': item.get('url', ''),
-        'engagement': item.get('engagement', 0),
-        'source_type': item.get('source_type', 'trending'),
-        'fetched_at': item['fetched_at']
+        'x_id': item['id'],
+        'headline': item['text'][:500],
+        'category': 'crypto',
+        'post_count': item.get('engagement', 0),
+        'time_ago': 'now',
+        'tweets': '[]'
     })
+print(json.dumps(rows))
+" > /tmp/x_news_rows.json
 
-if rows:
-    req = urllib.request.Request(
-        f"{url}/rest/v1/x_news",
-        data=json.dumps(rows).encode(),
-        headers={
-            'apikey': key,
-            'Authorization': f'Bearer {key}',
-            'Content-Type': 'application/json',
-            'Prefer': 'return=representation,resolution=ignore-duplicates'
-        }
-    )
-    try:
-        resp = urllib.request.urlopen(req)
-        result = json.loads(resp.read())
-        print(f"[Supabase] Inserted {len(result)} X crypto news items")
-    except Exception as e:
-        print(f"[Supabase] Insert error: {e}")
-else:
-    print("[Supabase] No items to insert")
-PYEOF
+INSERTED=$(curl -s -w "\n%{http_code}" \
+  "${SUPABASE_URL}/rest/v1/x_news" \
+  -H "apikey: ${SUPABASE_KEY}" \
+  -H "Authorization: Bearer ${SUPABASE_KEY}" \
+  -H "Content-Type: application/json" \
+  -H "Prefer: return=representation,resolution=merge-duplicates" \
+  -d @/tmp/x_news_rows.json)
+
+echo "[Supabase] Insert response: $(echo "$INSERTED" | tail -1)"
+rm -f /tmp/x_news_rows.json
 
 echo "[$(date -u)] X crypto news fetch complete."

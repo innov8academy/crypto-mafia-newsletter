@@ -227,17 +227,17 @@ async function fetchXNews(): Promise<NewsItem[]> {
         console.log(`[X News] Got ${items.length} items from Supabase`);
 
         return items.map((item: any) => ({
-            id: `x_${item.id || generateId(item.text || '', '')}`,
-            title: (item.text || '').substring(0, 200),
-            url: item.url || `https://x.com/search?q=${encodeURIComponent((item.text || '').substring(0, 50))}`,
+            id: `x_${item.id || generateId(item.headline || '', '')}`,
+            title: (item.headline || '').substring(0, 200),
+            url: `https://x.com/search?q=${encodeURIComponent((item.headline || '').substring(0, 50))}`,
             source: 'x_twitter',
             sourceName: 'X/Twitter Crypto',
             publishedAt: item.fetched_at || new Date().toISOString(),
-            summary: item.text || '',
+            summary: item.headline || '',
             imageUrl: '',
-            author: item.author || 'X_Trending',
-            content: item.text || '',
-            tier: 0, // Special tier for X/Twitter
+            author: 'X_Trending',
+            content: item.headline || '',
+            tier: 0,
         }));
     } catch (error) {
         console.error('[X News] Error fetching:', error);

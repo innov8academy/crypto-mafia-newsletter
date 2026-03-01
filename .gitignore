@@ -1,2 +1,3 @@
 .env.secrets
 .env.local
+scripts/x-news-cache/
