@@ -34,15 +34,19 @@ sleep 2
 
 # SOURCE 2-5: Targeted crypto searches (the real content source)
 echo "[Fetch] Searching Bitcoin + Ethereum news..."
-$BIRD search "Bitcoin OR Ethereum news -filter:replies" -n 15 --json > "$TEMP_DIR/search1.json" 2>/dev/null || echo "[]" > "$TEMP_DIR/search1.json"
+$BIRD search "Bitcoin OR Ethereum news min_faves:50 -filter:replies" -n 20 --json > "$TEMP_DIR/search1.json" 2>/dev/null || echo "[]" > "$TEMP_DIR/search1.json"
 sleep 2
 
 echo "[Fetch] Searching DeFi + altcoin news..."
-$BIRD search "crypto OR DeFi OR Solana news -filter:replies" -n 15 --json > "$TEMP_DIR/search2.json" 2>/dev/null || echo "[]" > "$TEMP_DIR/search2.json"
+$BIRD search "crypto OR DeFi OR Solana news min_faves:50 -filter:replies" -n 20 --json > "$TEMP_DIR/search2.json" 2>/dev/null || echo "[]" > "$TEMP_DIR/search2.json"
 sleep 2
 
-echo "[Fetch] Searching crypto regulation + ETF..."
-$BIRD search "crypto regulation OR Bitcoin ETF OR SEC crypto -filter:replies" -n 10 --json > "$TEMP_DIR/search3.json" 2>/dev/null || echo "[]" > "$TEMP_DIR/search3.json"
+echo "[Fetch] Searching crypto regulation + ETF + market..."
+$BIRD search "crypto regulation OR Bitcoin ETF OR SEC crypto OR crypto market min_faves:20 -filter:replies" -n 15 --json > "$TEMP_DIR/search3.json" 2>/dev/null || echo "[]" > "$TEMP_DIR/search3.json"
+sleep 2
+
+echo "[Fetch] Searching crypto whale + breaking..."
+$BIRD search "crypto breaking OR whale alert OR Bitcoin price min_faves:100 -filter:replies" -n 15 --json > "$TEMP_DIR/search4.json" 2>/dev/null || echo "[]" > "$TEMP_DIR/search4.json"
 
 # Process and save
 echo "[Process] Processing trending items..."
@@ -114,7 +118,8 @@ def is_spam(text):
 all_trending = (safe_load(f"{temp_dir}/trending_general.json") +
                 safe_load(f"{temp_dir}/search1.json") +
                 safe_load(f"{temp_dir}/search2.json") +
-                safe_load(f"{temp_dir}/search3.json"))
+                safe_load(f"{temp_dir}/search3.json") +
+                safe_load(f"{temp_dir}/search4.json"))
 items = []
 skipped = 0
 spam_filtered = 0

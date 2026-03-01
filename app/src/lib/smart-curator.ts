@@ -255,7 +255,7 @@ export async function curateNews(
 
             for (const [key, existing] of stories) {
                 const similarity = calculateSimilarity(raw.headline, existing.headline);
-                if (similarity > 0.5 && similarity > maxSimilarity) {
+                if (similarity > 0.35 && similarity > maxSimilarity) {
                     matchedKey = key;
                     maxSimilarity = similarity;
                 }

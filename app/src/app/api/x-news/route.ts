@@ -74,8 +74,44 @@ export async function GET() {
 
         const rawItems = await response.json();
 
+        // Deduplicate by headline similarity before AI filter
+        const deduped: any[] = [];
+        const seenNormalized = new Set<string>();
+        for (const item of rawItems) {
+            const headline = (item.headline || '').toLowerCase();
+            // Normalize: remove emoji, special chars, extra spaces
+            const normalized = headline
+                .replace(/[^\w\s]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .substring(0, 60);
+            
+            // Check for near-duplicates using first 40 chars
+            const shortKey = normalized.substring(0, 40);
+            if (seenNormalized.has(shortKey)) continue;
+            
+            // Also check word overlap with existing items
+            const words = new Set(normalized.split(' ').filter((w: string) => w.length > 3));
+            let isDupe = false;
+            for (const seen of seenNormalized) {
+                const seenWords = new Set(seen.split(' ').filter((w: string) => w.length > 3));
+                if (seenWords.size === 0 || words.size === 0) continue;
+                const overlap = [...words].filter(w => seenWords.has(w)).length;
+                if (overlap / Math.max(words.size, seenWords.size) > 0.5) {
+                    isDupe = true;
+                    break;
+                }
+            }
+            if (isDupe) continue;
+
+            seenNormalized.add(normalized);
+            deduped.push(item);
+        }
+
+        console.log(`[X News] ${rawItems.length} raw → ${deduped.length} after dedup`);
+
         // AI filter to remove spam/scams
-        const filtered = apiKey ? await filterXNewsWithAI(rawItems, apiKey) : rawItems;
+        const filtered = apiKey ? await filterXNewsWithAI(deduped, apiKey) : deduped;
 
         const formatted = filtered.map((item: any) => ({
             id: item.id,

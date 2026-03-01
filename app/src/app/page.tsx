@@ -321,7 +321,25 @@ export default function Home() {
     setCustomFeeds([]); // Also clear custom feeds? Maybe keep them? Let's clear for "Clear All" semantic.
   }
 
-  const selectedItems = stories.filter(s => selectedIds.has(s.id));
+  // Combine selected stories from both Top Stories and X news
+  const selectedStoryItems = stories.filter(s => selectedIds.has(s.id));
+  const selectedXItems = xNews
+    .filter(item => selectedIds.has(`x_${item.id}`))
+    .map(item => ({
+      id: `x_${item.id}`,
+      headline: item.title,
+      summary: item.summary || item.title,
+      category: 'x_twitter',
+      baseScore: 0,
+      finalScore: 0,
+      entities: [],
+      originalUrl: item.url,
+      sources: ['X/Twitter'],
+      publishedAt: item.publishedAt || '',
+      crossSourceCount: 1,
+      boosts: [],
+    } as CuratedStory));
+  const selectedItems = [...selectedStoryItems, ...selectedXItems];
 
   // Premium Empty State - Editorial Noir
   if (!hasSearched && stories.length === 0) {
@@ -776,7 +794,7 @@ export default function Home() {
                   {stories.map((story, index) => (
                     <div
                       key={story.id}
-                      onClick={() => setViewingStory(story)}
+                      onClick={() => toggleSelect(story)}
                       className={`group relative overflow-hidden rounded-xl border p-5 transition-all duration-300 cursor-pointer hover-lift ${selectedIds.has(story.id)
                         ? 'bg-amber-500/10 border-amber-500/30 shadow-glow-amber-sm'
                         : 'bg-surface border-white/5 hover:bg-surface-elevated hover:border-white/10'
