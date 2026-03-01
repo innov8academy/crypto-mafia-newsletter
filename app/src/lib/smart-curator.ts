@@ -63,20 +63,6 @@ async function extractStories(
 ): Promise<RawExtractedStory[]> {
     let content = item.content || item.summary || '';
 
-    // X/Twitter items — extract as single story with engagement context
-    if (item.source === 'x_twitter') {
-        const tweetText = item.content || item.summary || item.title || '';
-        const cleanTitle = tweetText.split('\n')[0].substring(0, 120);
-        return [{
-            headline: cleanTitle,
-            summary: tweetText.substring(0, 500),
-            category: 'news',
-            baseScore: 6, // Moderate base — let cross-source matching boost it
-            entities: [],
-            originalUrl: item.url,
-        }];
-    }
-
     // Scrape if content is too short
     if (content.length < 500 && item.url) {
         const scraped = await scrapeContent(item.url);
@@ -180,7 +166,8 @@ export async function curateNews(
         }
     });
 
-    // NEWSLETTER-FIRST BALANCING with X/Twitter guaranteed slots
+    // NEWSLETTER-FIRST BALANCING
+    // X/Twitter news is handled separately in its own UI panel
     const candidateItems: NewsItem[] = [];
     const seenUrls = new Set<string>();
 
@@ -194,31 +181,8 @@ export async function curateNews(
         itemsBySource.get(item.sourceName)?.push(item);
     });
 
-    // Separate X/Twitter items from RSS items
-    const xItems: NewsItem[] = [];
-    const rssItemsBySource = new Map<string, NewsItem[]>();
-
-    for (const [source, items] of itemsBySource) {
-        if (source === 'X/Twitter Crypto' || source.startsWith('X: @')) {
-            xItems.push(...items);
-        } else {
-            rssItemsBySource.set(source, items);
-        }
-    }
-
-    // 0. X/TWITTER FIRST: Guarantee slots for real-time crypto signal
-    const X_GUARANTEED_SLOTS = 5;
-    xItems.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
-    xItems.slice(0, X_GUARANTEED_SLOTS).forEach(item => {
-        if (!seenUrls.has(item.url)) {
-            candidateItems.push(item);
-            seenUrls.add(item.url);
-        }
-    });
-    console.log(`[Curator] X/Twitter items: ${Math.min(xItems.length, X_GUARANTEED_SLOTS)}`);
-
     // 1. NEWSLETTERS FIRST: Take ALL items from Tier 1 (newsletters)
-    for (const [source, items] of rssItemsBySource) {
+    for (const [source, items] of itemsBySource) {
         const tier = feedTierMap.get(source) || 2;
         if (tier !== 1) continue;
 
@@ -232,13 +196,13 @@ export async function curateNews(
         });
     }
 
-    console.log(`[Curator] Newsletter + X items: ${candidateItems.length}`);
+    console.log(`[Curator] Newsletter items: ${candidateItems.length}`);
 
     // 2. FILL: Add news sites, blogs, social (2 per source, up to limit)
     const TOTAL_LIMIT = 30;
     const QUOTA_PER_NON_NEWSLETTER = 2;
 
-    for (const [source, items] of rssItemsBySource) {
+    for (const [source, items] of itemsBySource) {
         const tier = feedTierMap.get(source) || 2;
         if (tier === 1) continue; // Already handled
 
@@ -254,13 +218,12 @@ export async function curateNews(
         });
     }
 
-    // Sort candidates: X first, then newsletters, then by date
+    // Sort candidates: newsletters first, then by date
     candidateItems.sort((a, b) => {
         const tierA = a.tier ?? (feedTierMap.get(a.sourceName) || 2);
         const tierB = b.tier ?? (feedTierMap.get(b.sourceName) || 2);
-        // Tier 0 (X) and Tier 1 (newsletters) first
-        if (tierA <= 1 && tierB > 1) return -1;
-        if (tierA > 1 && tierB <= 1) return 1;
+        if (tierA === 1 && tierB !== 1) return -1;
+        if (tierA !== 1 && tierB === 1) return 1;
         return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
     });
 

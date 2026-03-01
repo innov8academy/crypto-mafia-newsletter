@@ -68,6 +68,10 @@ export default function Home() {
   const [curationStats, setCurationStats] = useState<any>(null);
   const [showStatsDialog, setShowStatsDialog] = useState(false);
 
+  // X/Twitter News State
+  const [xNews, setXNews] = useState<any[]>([]);
+  const [xLoading, setXLoading] = useState(false);
+
   // Load persisted state on mount
   useEffect(() => {
     const savedKey = getApiKey();
@@ -96,7 +100,36 @@ export default function Home() {
         }
       })
       .catch(err => console.error('Failed to check server status', err));
+
+    // Fetch X/Twitter news
+    fetchXNews();
   }, []);
+
+  async function fetchXNews() {
+    setXLoading(true);
+    try {
+      const res = await fetch('/api/x-news');
+      const data = await res.json();
+      if (data.items) {
+        setXNews(data.items);
+      }
+    } catch (err) {
+      console.error('Failed to fetch X news', err);
+    } finally {
+      setXLoading(false);
+    }
+  }
+
+  function selectXItem(item: any) {
+    const xId = `x_${item.id}`;
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(xId)) {
+      newSelected.delete(xId);
+    } else {
+      newSelected.add(xId);
+    }
+    setSelectedIds(newSelected);
+  }
 
   // Persist stories when they change
   useEffect(() => {
@@ -585,6 +618,79 @@ export default function Home() {
           <div className="grid grid-cols-12 gap-8 h-[calc(100vh-140px)]">
             {/* Main Feed */}
             <div className="col-span-8 flex flex-col h-full">
+
+              {/* X/Twitter Crypto News Section */}
+              {xNews.length > 0 && (
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="bg-white text-black px-2 py-1 rounded-md font-bold text-sm leading-none">𝕏</span>
+                      <h2 className="font-display text-lg text-white tracking-tight">Trending on X</h2>
+                    </div>
+                    <span className="text-xs text-white/30 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">
+                      {xNews.length} posts
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="ml-auto text-white/30 hover:text-white text-xs h-7"
+                      onClick={() => fetchXNews()}
+                      disabled={xLoading}
+                    >
+                      <RefreshCw className={`w-3 h-3 mr-1 ${xLoading ? 'animate-spin' : ''}`} />
+                      Refresh
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {xNews.map((item: any) => {
+                      const isSelected = selectedIds.has(`x_${item.id}`);
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => selectXItem(item)}
+                          className={`group rounded-lg border p-4 transition-all duration-200 cursor-pointer ${
+                            isSelected
+                              ? 'bg-amber-500/10 border-amber-500/30'
+                              : 'border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10'
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="shrink-0 mt-0.5">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                                isSelected ? 'bg-amber-500 text-black' : 'bg-white/10 text-white/60'
+                              }`}>
+                                {isSelected ? <Check className="w-4 h-4" /> : '𝕏'}
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-sm font-medium leading-snug line-clamp-2 transition-colors ${
+                                isSelected ? 'text-amber-300' : 'text-white/80 group-hover:text-amber-300'
+                              }`}>
+                                {item.title}
+                              </p>
+                              {item.postCount > 0 && (
+                                <p className="text-xs text-white/30 mt-1">
+                                  {item.postCount.toLocaleString()} posts
+                                </p>
+                              )}
+                            </div>
+                            <a
+                              href={item.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="shrink-0 mt-1"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5 text-white/20 hover:text-white/60 transition-colors" />
+                            </a>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="font-display text-2xl text-white tracking-tight flex items-center gap-3">

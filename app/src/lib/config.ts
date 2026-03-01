@@ -20,7 +20,6 @@ export const defaultConfig: NewsletterConfig = {
     rssFeeds: [
         // =====================
         // TIER 1: CRYPTO NEWSLETTERS (HIGH VALUE — curated multi-story digests)
-        // These are ACTUAL newsletters that compile multiple stories per issue
         // =====================
         {
             name: "The Pomp Letter",
@@ -35,31 +34,43 @@ export const defaultConfig: NewsletterConfig = {
             tier: 1
         },
         {
-            name: "DeFi Weekly",
-            url: "https://defiweekly.substack.com/feed",
+            name: "Unchained Newsletter",
+            url: "https://unchainedcrypto.substack.com/feed",
             category: "newsletter",
             tier: 1
         },
         {
-            name: "TLDR Crypto",
-            url: "https://tldr.tech/crypto/rss",
+            name: "Blockchain Bites",
+            url: "https://blockchainbites.substack.com/feed",
             category: "newsletter",
             tier: 1
         },
-        // ⚠️ NEEDS RSS.APP PROXY — Alex to set up:
+        {
+            name: "Week in Ethereum",
+            url: "https://weekinethereumnews.com/feed",
+            category: "newsletter",
+            tier: 1
+        },
+        {
+            name: "Crypto Pragmatist",
+            url: "https://cryptopragmatist.substack.com/feed",
+            category: "newsletter",
+            tier: 1
+        },
+        // ⚠️ TODO: Add rss.app proxies for:
         // Milk Road, Bankless, The Daily Ape, Coinbase Bytes
-        // These newsletters block direct RSS. Need rss.app feeds.
 
         // =====================
         // TIER 2: CRYPTO NEWS SITES — HIGH VOLUME (single stories, very fresh, many per day)
         // These are the workhorses — lots of content, post 10-50x/day
         // =====================
-        {
-            name: "CoinDesk",
-            url: "https://www.coindesk.com/arc/outboundfeeds/rss/",
-            category: "news",
-            tier: 2
-        },
+        // CoinDesk — DEAD (blocked from server-side RSS)
+        // {
+        //     name: "CoinDesk",
+        //     url: "https://www.coindesk.com/arc/outboundfeeds/rss/",
+        //     category: "news",
+        //     tier: 2
+        // },
         {
             name: "Cointelegraph",
             url: "https://cointelegraph.com/rss",
@@ -78,12 +89,13 @@ export const defaultConfig: NewsletterConfig = {
             category: "news",
             tier: 2
         },
-        {
-            name: "Bitcoin Magazine",
-            url: "https://bitcoinmagazine.com/.rss/full/",
-            category: "news",
-            tier: 2
-        },
+        // Bitcoin Magazine — DEAD (blocked)
+        // {
+        //     name: "Bitcoin Magazine",
+        //     url: "https://bitcoinmagazine.com/.rss/full/",
+        //     category: "news",
+        //     tier: 2
+        // },
         {
             name: "BeInCrypto",
             url: "https://beincrypto.com/feed/",
@@ -114,12 +126,13 @@ export const defaultConfig: NewsletterConfig = {
             category: "news",
             tier: 2
         },
-        {
-            name: "U.Today",
-            url: "https://u.today/rss",
-            category: "news",
-            tier: 2
-        },
+        // U.Today — DEAD (blocked)
+        // {
+        //     name: "U.Today",
+        //     url: "https://u.today/rss",
+        //     category: "news",
+        //     tier: 2
+        // },
         {
             name: "AMBCrypto",
             url: "https://ambcrypto.com/feed/",
@@ -156,12 +169,13 @@ export const defaultConfig: NewsletterConfig = {
             category: "news",
             tier: 2
         },
-        {
-            name: "The Defiant",
-            url: "https://thedefiant.io/feed",
-            category: "news",
-            tier: 2
-        },
+        // The Defiant — DEAD
+        // {
+        //     name: "The Defiant",
+        //     url: "https://thedefiant.io/feed",
+        //     category: "news",
+        //     tier: 2
+        // },
         {
             name: "Blockworks",
             url: "https://blockworks.co/feed",
@@ -172,12 +186,13 @@ export const defaultConfig: NewsletterConfig = {
         // =====================
         // TIER 3: OFFICIAL BLOGS & RESEARCH (primary sources — rare but high signal)
         // =====================
-        {
-            name: "Ethereum Blog",
-            url: "https://blog.ethereum.org/feed.xml",
-            category: "blog",
-            tier: 3
-        },
+        // Ethereum Blog — DEAD
+        // {
+        //     name: "Ethereum Blog",
+        //     url: "https://blog.ethereum.org/feed.xml",
+        //     category: "blog",
+        //     tier: 3
+        // },
         {
             name: "Messari Research",
             url: "https://messari.io/rss",

@@ -249,8 +249,8 @@ async function fetchXNews(): Promise<NewsItem[]> {
 export async function fetchAllNews(feeds: RSSFeed[]): Promise<NewsItem[]> {
     const allPromises = feeds.map(feed => parseRSSFeed(feed));
 
-    // Also fetch X/Twitter news
-    allPromises.push(fetchXNews());
+    // X/Twitter news is shown in its own panel — don't mix into Top Stories
+    // allPromises.push(fetchXNews());  // DISABLED: X news handled separately via /api/x-news
 
     const results = await Promise.all(allPromises);
 
@@ -259,8 +259,6 @@ export async function fetchAllNews(feeds: RSSFeed[]): Promise<NewsItem[]> {
     feeds.forEach((feed, i) => {
         feedHealth.push({ name: feed.name, count: results[i]?.length || 0 });
     });
-    const xCount = results[results.length - 1]?.length || 0;
-    feedHealth.push({ name: 'X/Twitter Crypto', count: xCount });
 
     const deadFeeds = feedHealth.filter(f => f.count === 0);
     const liveFeeds = feedHealth.filter(f => f.count > 0);

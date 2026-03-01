@@ -1,31 +1,44 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
 
 export async function GET() {
     try {
-        if (!supabaseAdmin) {
-            return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+        if (!supabaseUrl || !supabaseKey) {
+            return NextResponse.json({ items: [], error: 'Supabase not configured' });
         }
 
-        // Fetch X crypto news from last 24 hours
-        const oneDayAgo = new Date();
-        oneDayAgo.setHours(oneDayAgo.getHours() - 24);
+        const response = await fetch(
+            `${supabaseUrl}/rest/v1/x_news?order=fetched_at.desc&limit=20`,
+            {
+                headers: {
+                    'apikey': supabaseKey,
+                    'Authorization': `Bearer ${supabaseKey}`,
+                },
+                cache: 'no-store',
+            }
+        );
 
-        const { data, error } = await supabaseAdmin
-            .from('x_news')
-            .select('*')
-            .gte('fetched_at', oneDayAgo.toISOString())
-            .order('fetched_at', { ascending: false })
-            .limit(20);
-
-        if (error) {
-            console.error('Supabase error:', error);
-            return NextResponse.json({ error: error.message }, { status: 500 });
+        if (!response.ok) {
+            return NextResponse.json({ items: [], error: 'Failed to fetch' });
         }
 
-        return NextResponse.json(data || []);
+        const items = await response.json();
+
+        const formatted = items.map((item: any) => ({
+            id: item.id,
+            author: item.author || 'X_Trending',
+            title: item.headline || '',
+            summary: item.headline || '',
+            url: `https://x.com/search?q=${encodeURIComponent((item.headline || '').substring(0, 50))}`,
+            postCount: item.post_count || 0,
+            publishedAt: item.fetched_at,
+        }));
+
+        return NextResponse.json({ items: formatted, count: formatted.length });
     } catch (error) {
-        console.error('X news fetch error:', error);
-        return NextResponse.json({ error: 'Failed to fetch X news' }, { status: 500 });
+        console.error('X news API error:', error);
+        return NextResponse.json({ items: [], error: 'Internal error' });
     }
 }
