@@ -57,8 +57,42 @@ export const defaultConfig: NewsletterConfig = {
             category: "newsletter",
             tier: 1
         },
-        // ⚠️ TODO: Add rss.app proxies for:
-        // Milk Road, Bankless, The Daily Ape, Coinbase Bytes
+        {
+            name: "Milk Road",
+            url: "https://rss.app/feeds/tkRbHtYWSDuIMjvt.xml",
+            category: "newsletter",
+            tier: 1
+        },
+        {
+            name: "Bankless",
+            url: "https://rss.app/feeds/1PqhakD8jpPG5apa.xml",
+            category: "newsletter",
+            tier: 1
+        },
+        {
+            name: "Coinbase Bytes",
+            url: "https://rss.app/feeds/tAdW3cALALcLfyS9.xml",
+            category: "newsletter",
+            tier: 1
+        },
+        {
+            name: "Glassnode Insights",
+            url: "https://insights.glassnode.com/rss/",
+            category: "newsletter",
+            tier: 1
+        },
+        {
+            name: "The DeFi Report",
+            url: "https://thedefireport.substack.com/feed",
+            category: "newsletter",
+            tier: 1
+        },
+        {
+            name: "The Daily Gwei",
+            url: "https://thedailygwei.substack.com/feed",
+            category: "newsletter",
+            tier: 1
+        },
 
         // =====================
         // TIER 2: CRYPTO NEWS SITES — HIGH VOLUME (single stories, very fresh, many per day)
