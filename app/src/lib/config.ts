@@ -229,7 +229,7 @@ export const defaultConfig: NewsletterConfig = {
 
 // Scoring configuration — NEWSLETTERS GET 2x WEIGHT
 export const SCORING_CONFIG = {
-    minScoreToShow: 5, // Lowered from 6 to surface more newsletter stories
+    minScoreToShow: 6, // Raised back — tier weights now properly boost newsletter stories
     crossSourceBoost: {
         twoSources: 1,
         threePlusSources: 2
@@ -244,6 +244,7 @@ export const SCORING_CONFIG = {
     } as Record<string, number>,
     recencyBoostHours: 12,
     tierWeight: {
+        0: 1.2,  // X/Twitter — real-time, high-engagement crypto signal
         1: 2.0,  // Newsletters — HIGHEST. Curated, multi-story, most valuable
         2: 0.6,  // News sites — LOW. Single stories, often rehashed across sites
         3: 1.2,  // Official blogs — important primary sources

@@ -63,6 +63,20 @@ async function extractStories(
 ): Promise<RawExtractedStory[]> {
     let content = item.content || item.summary || '';
 
+    // X/Twitter items — extract as single story with engagement context
+    if (item.source === 'x_twitter') {
+        const tweetText = item.content || item.summary || item.title || '';
+        const cleanTitle = tweetText.split('\n')[0].substring(0, 120);
+        return [{
+            headline: cleanTitle,
+            summary: tweetText.substring(0, 500),
+            category: 'news',
+            baseScore: 6, // Moderate base — let cross-source matching boost it
+            entities: [],
+            originalUrl: item.url,
+        }];
+    }
+
     // Scrape if content is too short
     if (content.length < 500 && item.url) {
         const scraped = await scrapeContent(item.url);
@@ -166,12 +180,7 @@ export async function curateNews(
         }
     });
 
-    // NEWSLETTER-FIRST BALANCING
-    // Newsletters are the most valuable — each issue contains 5-10 curated stories.
-    // News sites just have 1 story each and often rehash the same thing.
-    // Strategy:
-    // 1. Take ALL newsletter items first (tier 1) — they're already curated
-    // 2. Then fill with news sites, blogs, and social (limited per source)
+    // NEWSLETTER-FIRST BALANCING with X/Twitter guaranteed slots
     const candidateItems: NewsItem[] = [];
     const seenUrls = new Set<string>();
 
@@ -185,13 +194,35 @@ export async function curateNews(
         itemsBySource.get(item.sourceName)?.push(item);
     });
 
-    // 1. NEWSLETTERS FIRST: Take ALL items from Tier 1 (newsletters)
+    // Separate X/Twitter items from RSS items
+    const xItems: NewsItem[] = [];
+    const rssItemsBySource = new Map<string, NewsItem[]>();
+
     for (const [source, items] of itemsBySource) {
+        if (source === 'X/Twitter Crypto' || source.startsWith('X: @')) {
+            xItems.push(...items);
+        } else {
+            rssItemsBySource.set(source, items);
+        }
+    }
+
+    // 0. X/TWITTER FIRST: Guarantee slots for real-time crypto signal
+    const X_GUARANTEED_SLOTS = 5;
+    xItems.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+    xItems.slice(0, X_GUARANTEED_SLOTS).forEach(item => {
+        if (!seenUrls.has(item.url)) {
+            candidateItems.push(item);
+            seenUrls.add(item.url);
+        }
+    });
+    console.log(`[Curator] X/Twitter items: ${Math.min(xItems.length, X_GUARANTEED_SLOTS)}`);
+
+    // 1. NEWSLETTERS FIRST: Take ALL items from Tier 1 (newsletters)
+    for (const [source, items] of rssItemsBySource) {
         const tier = feedTierMap.get(source) || 2;
         if (tier !== 1) continue;
 
         items.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
-        // Take up to 5 items per newsletter (they contain multi-story digests)
         const newsletterItems = items.slice(0, 5);
         newsletterItems.forEach(item => {
             if (!seenUrls.has(item.url)) {
@@ -201,13 +232,13 @@ export async function curateNews(
         });
     }
 
-    console.log(`[Curator] Newsletter items: ${candidateItems.length}`);
+    console.log(`[Curator] Newsletter + X items: ${candidateItems.length}`);
 
     // 2. FILL: Add news sites, blogs, social (2 per source, up to limit)
-    const TOTAL_LIMIT = 30; // Increased from 20 to handle more sources
+    const TOTAL_LIMIT = 30;
     const QUOTA_PER_NON_NEWSLETTER = 2;
 
-    for (const [source, items] of itemsBySource) {
+    for (const [source, items] of rssItemsBySource) {
         const tier = feedTierMap.get(source) || 2;
         if (tier === 1) continue; // Already handled
 
@@ -223,14 +254,13 @@ export async function curateNews(
         });
     }
 
-    // Sort candidates: newsletters first, then by date
+    // Sort candidates: X first, then newsletters, then by date
     candidateItems.sort((a, b) => {
-        const tierA = feedTierMap.get(a.sourceName) || 2;
-        const tierB = feedTierMap.get(b.sourceName) || 2;
-        // Tier 1 (newsletters) always first
-        if (tierA === 1 && tierB !== 1) return -1;
-        if (tierA !== 1 && tierB === 1) return 1;
-        // Within same tier, sort by date
+        const tierA = a.tier ?? (feedTierMap.get(a.sourceName) || 2);
+        const tierB = b.tier ?? (feedTierMap.get(b.sourceName) || 2);
+        // Tier 0 (X) and Tier 1 (newsletters) first
+        if (tierA <= 1 && tierB > 1) return -1;
+        if (tierA > 1 && tierB <= 1) return 1;
         return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
     });
 
@@ -283,8 +313,9 @@ export async function curateNews(
                     existing.summary = raw.summary;
                 }
             } else {
-                // New story
+                // New story — track tier for scoring weight
                 const id = generateId(raw.headline);
+                const storyTier = item.tier ?? (feedTierMap.get(item.sourceName) || 2);
                 stories.set(id, {
                     id,
                     headline: raw.headline,
@@ -298,7 +329,8 @@ export async function curateNews(
                     publishedAt: item.publishedAt,
                     crossSourceCount: 1,
                     boosts: [],
-                });
+                    _tier: storyTier, // Internal: used for tier weight scoring
+                } as CuratedStory & { _tier: number });
             }
         }
 
@@ -341,8 +373,19 @@ export async function curateNews(
             boosts.push('+1 (recent)');
         }
 
+        // Apply tier weight multiplier
+        const storyTier = (story as any)._tier ?? 2;
+        const tierWeight = SCORING_CONFIG.tierWeight[storyTier] ?? 1.0;
+        if (tierWeight !== 1.0) {
+            const before = finalScore;
+            finalScore = Math.round(finalScore * tierWeight * 10) / 10;
+            boosts.push(`×${tierWeight} (tier ${storyTier})`);
+        }
+
         story.finalScore = Math.min(finalScore, 10); // Cap at 10
         story.boosts = boosts;
+        // Clean up internal field
+        delete (story as any)._tier;
     }
 
     // Filter and sort

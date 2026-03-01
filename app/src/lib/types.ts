@@ -12,6 +12,7 @@ export interface NewsItem {
   author?: string;
   content?: string;
   isSelected?: boolean;
+  tier?: number; // Feed tier for scoring weight
 }
 
 // Curated story after AI processing

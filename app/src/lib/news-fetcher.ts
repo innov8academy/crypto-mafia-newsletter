@@ -1,5 +1,6 @@
 import { NewsItem, RSSFeed } from './types';
 import { XMLParser } from 'fast-xml-parser';
+import { isSupabaseConfigured } from './supabase';
 
 const parser = new XMLParser({
     ignoreAttributes: false,
@@ -98,7 +99,8 @@ async function fetchRedditViaJina(feed: RSSFeed): Promise<NewsItem[]> {
 async function parseRSSFeed(feed: RSSFeed): Promise<NewsItem[]> {
     // Use Jina for Reddit feeds (Reddit blocks most RSS requests from servers)
     if (isRedditFeed(feed.url)) {
-        return fetchRedditViaJina(feed);
+        const items = await fetchRedditViaJina(feed);
+        return items.map(item => ({ ...item, tier: feed.tier || 2 }));
     }
 
     try {
@@ -163,6 +165,7 @@ async function parseRSSFeed(feed: RSSFeed): Promise<NewsItem[]> {
                 imageUrl,
                 author: item.author || item['dc:creator'] || '',
                 content: cleanText(bestContent), // Store full content for extraction
+                tier: feed.tier || 2,
             };
         });
     } catch (error) {
@@ -192,10 +195,80 @@ function cleanText(text: string): string {
         .trim();
 }
 
+// Fetch crypto news from X/Twitter via Supabase (pushed by x-news-fetcher.sh)
+async function fetchXNews(): Promise<NewsItem[]> {
+    try {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+        if (!supabaseUrl || !supabaseKey) {
+            console.log('[X News] Supabase not configured, skipping');
+            return [];
+        }
+
+        console.log('[X News] Fetching from Supabase...');
+        const response = await fetch(
+            `${supabaseUrl}/rest/v1/x_news?order=fetched_at.desc&limit=15`,
+            {
+                headers: {
+                    'apikey': supabaseKey,
+                    'Authorization': `Bearer ${supabaseKey}`,
+                },
+                cache: 'no-store',
+            }
+        );
+
+        if (!response.ok) {
+            console.error('[X News] Supabase fetch failed:', response.status);
+            return [];
+        }
+
+        const items = await response.json();
+        console.log(`[X News] Got ${items.length} items from Supabase`);
+
+        return items.map((item: any) => ({
+            id: `x_${item.id || generateId(item.text || '', '')}`,
+            title: (item.text || '').substring(0, 200),
+            url: item.url || `https://x.com/search?q=${encodeURIComponent((item.text || '').substring(0, 50))}`,
+            source: 'x_twitter',
+            sourceName: 'X/Twitter Crypto',
+            publishedAt: item.fetched_at || new Date().toISOString(),
+            summary: item.text || '',
+            imageUrl: '',
+            author: item.author || 'X_Trending',
+            content: item.text || '',
+            tier: 0, // Special tier for X/Twitter
+        }));
+    } catch (error) {
+        console.error('[X News] Error fetching:', error);
+        return [];
+    }
+}
+
 // Fetch news from all configured feeds
 export async function fetchAllNews(feeds: RSSFeed[]): Promise<NewsItem[]> {
     const allPromises = feeds.map(feed => parseRSSFeed(feed));
+
+    // Also fetch X/Twitter news
+    allPromises.push(fetchXNews());
+
     const results = await Promise.all(allPromises);
+
+    // Feed health logging
+    const feedHealth: { name: string; count: number }[] = [];
+    feeds.forEach((feed, i) => {
+        feedHealth.push({ name: feed.name, count: results[i]?.length || 0 });
+    });
+    const xCount = results[results.length - 1]?.length || 0;
+    feedHealth.push({ name: 'X/Twitter Crypto', count: xCount });
+
+    const deadFeeds = feedHealth.filter(f => f.count === 0);
+    const liveFeeds = feedHealth.filter(f => f.count > 0);
+    console.log(`[Feed Health] ${liveFeeds.length} live, ${deadFeeds.length} dead/empty`);
+    if (deadFeeds.length > 0) {
+        console.log(`[Feed Health] ⚠️ Dead/empty feeds: ${deadFeeds.map(f => f.name).join(', ')}`);
+    }
+    liveFeeds.forEach(f => console.log(`[Feed Health] ✅ ${f.name}: ${f.count} items`));
 
     const allNews = results.flat();
 
@@ -215,19 +288,24 @@ export async function fetchAllNews(feeds: RSSFeed[]): Promise<NewsItem[]> {
         return true;
     });
 
-    // STRICT: Only keep items from the last 24 hours
-    const oneDayAgo = new Date();
-    oneDayAgo.setHours(oneDayAgo.getHours() - 24);
+    // TIER-AWARE freshness filter:
+    // Tier 1 (newsletters): 48 hours — they publish less frequently
+    // Everything else: 24 hours
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const twoDaysAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
 
     const fresh = deduplicated.filter(item => {
         const pubDate = new Date(item.publishedAt);
         // If date is invalid or in the future, keep it (likely fresh)
         if (isNaN(pubDate.getTime())) return true;
-        if (pubDate > new Date()) return true;
-        return pubDate >= oneDayAgo;
+        if (pubDate > now) return true;
+        // Newsletters get 48h window
+        const cutoff = item.tier === 1 ? twoDaysAgo : oneDayAgo;
+        return pubDate >= cutoff;
     });
 
-    console.log(`[News] ${deduplicated.length} total → ${fresh.length} from last 24h (dropped ${deduplicated.length - fresh.length} stale)`);
+    console.log(`[News] ${deduplicated.length} total → ${fresh.length} fresh (dropped ${deduplicated.length - fresh.length} stale)`);
 
     return fresh;
 }
