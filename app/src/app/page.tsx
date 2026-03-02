@@ -746,21 +746,26 @@ export default function Home() {
                     {xNews.map((item: any) => {
                       const isSelected = selectedIds.has(`x_${item.id}`);
                       return (
-                        <div
+                        <a
                           key={item.id}
-                          onClick={() => selectXItem(item)}
-                          className={`group rounded-lg border p-4 transition-all duration-200 cursor-pointer ${
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`group rounded-lg border p-4 transition-all duration-200 cursor-pointer block ${
                             isSelected
                               ? 'bg-amber-500/10 border-amber-500/30'
                               : 'border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10'
                           }`}
                         >
                           <div className="flex items-start gap-3">
-                            <div className="shrink-0 mt-0.5">
-                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                                isSelected ? 'bg-amber-500 text-black' : 'bg-white/10 text-white/60'
+                            <div
+                              className="shrink-0 mt-0.5 cursor-pointer"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); selectXItem(item); }}
+                            >
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all hover:scale-110 ${
+                                isSelected ? 'bg-amber-500 text-black' : 'bg-white/10 text-white/60 hover:bg-amber-500/20 hover:text-amber-400'
                               }`}>
-                                {isSelected ? <Check className="w-4 h-4" /> : '𝕏'}
+                                {isSelected ? <Check className="w-4 h-4" /> : <MoveRight className="w-4 h-4" />}
                               </div>
                             </div>
                             <div className="flex-1 min-w-0">
@@ -775,17 +780,9 @@ export default function Home() {
                                 </p>
                               )}
                             </div>
-                            <a
-                              href={item.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="shrink-0 mt-1"
-                            >
-                              <ExternalLink className="w-3.5 h-3.5 text-white/20 hover:text-white/60 transition-colors" />
-                            </a>
+                            <ExternalLink className="shrink-0 mt-1 w-3.5 h-3.5 text-white/20 group-hover:text-white/60 transition-colors" />
                           </div>
-                        </div>
+                        </a>
                       );
                     })}
                   </div>
@@ -816,7 +813,7 @@ export default function Home() {
                   {stories.map((story, index) => (
                     <div
                       key={story.id}
-                      onClick={() => toggleSelect(story)}
+                      onClick={() => setViewingStory(story)}
                       className={`group relative overflow-hidden rounded-xl border p-5 transition-all duration-300 cursor-pointer hover-lift ${selectedIds.has(story.id)
                         ? 'bg-amber-500/10 border-amber-500/30 shadow-glow-amber-sm'
                         : 'bg-surface border-white/5 hover:bg-surface-elevated hover:border-white/10'
