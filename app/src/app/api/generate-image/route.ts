@@ -1,5 +1,74 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const FALLBACK_MODELS = [
+    'google/gemini-3.1-flash-image-preview',
+    'google/gemini-2.0-flash-001',
+    'google/gemini-3-pro-image-preview',
+];
+
+async function generateWithModel(prompt: string, selectedModel: string, apiKey: string): Promise<string> {
+    const isChatModel = selectedModel.includes('gemini') || selectedModel.includes('seedream') || selectedModel.includes('gpt');
+
+    if (isChatModel) {
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+                'HTTP-Referer': 'https://cryptomafia-newsletter.local',
+                'X-Title': 'Crypto Mafia Image Generator',
+            },
+            body: JSON.stringify({
+                model: selectedModel,
+                modalities: ['image', 'text'],
+                messages: [{ role: 'user', content: `Generate a photorealistic 16:9 image of: ${prompt}.` }],
+            }),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        // @ts-ignore
+        if (data.choices?.[0]?.message?.images?.[0]?.image_url?.url) {
+            // @ts-ignore
+            return data.choices[0].message.images[0].image_url.url;
+        }
+        const content = data.choices?.[0]?.message?.content || '';
+        const urlMatch = content.match(/(https?:\/\/[^\s)]+|data:image\/[a-zA-Z]+;base64,[^\s)]+)/);
+        if (urlMatch) return urlMatch[0];
+        throw new Error(`No URL in response: ${JSON.stringify(data).substring(0, 500)}`);
+    } else {
+        const response = await fetch('https://openrouter.ai/api/v1/images/generations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+                'HTTP-Referer': 'https://cryptomafia-newsletter.local',
+                'X-Title': 'Crypto Mafia Image Generator',
+            },
+            body: JSON.stringify({
+                model: selectedModel,
+                prompt: prompt,
+                ...(selectedModel.includes('dall-e') ? { size: "1024x1024" } : {}),
+                ...(selectedModel.includes('flux') ? { aspect_ratio: "16:9" } : {}),
+            }),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        const url = data.data?.[0]?.url;
+        if (!url) throw new Error('No image URL in response');
+        return url;
+    }
+}
+
 export async function POST(request: NextRequest) {
     console.log('API: generate-image called');
     try {
@@ -14,101 +83,36 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Default to FLUX.1.1 Pro if invalid model passed
         const selectedModel = model || 'google/gemini-3.1-flash-image-preview';
 
+        // Build fallback chain: selected model first, then others
+        const modelsToTry = [selectedModel, ...FALLBACK_MODELS.filter(m => m !== selectedModel)];
         let imageUrl = '';
+        let lastError = '';
 
-        // Check if using a model that might be Chat-based (Gemini/Seedream often accessed via Chat on OR)
-        const isChatModel = selectedModel.includes('gemini') || selectedModel.includes('seedream') || selectedModel.includes('gpt');
-
-        if (isChatModel) {
-            console.log('API: Routing to Chat Completions for model:', selectedModel);
-            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`,
-                    'HTTP-Referer': 'https://cryptomafia-newsletter.local',
-                    'X-Title': 'Crypto Mafia Image Generator',
-                },
-                body: JSON.stringify({
-                    model: selectedModel,
-                    modalities: ['image', 'text'], // Matches user snippet order
-                    // image_config: { aspect_ratio: '16:9' }, // Temporarily removed to match snippet exactly if needed, but keeping generally safe. 
-                    // Actually, let's keep it minimal as per snippet for 3-Pro if it helps.
-                    // User snippet had NO image_config. Let's try sending it to be safe, if it fails we remove.
-                    // But for now, I'll align specifically with the modalites.
-                    messages: [
-                        {
-                            role: 'user',
-                            content: `Generate a photorealistic 16:9 image of: ${prompt}.`
-                        }
-                    ],
-                }),
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                // If 404/405, it might be a true error
-                throw new Error(`OpenRouter Chat API error: ${response.status} - ${errorText}`);
-            }
-
-            const data = await response.json();
-            console.log('API: Full OpenRouter Response:', JSON.stringify(data, null, 2));
-
-            // Check for direct image array (OpenRouter specific extension for some models)
-            // @ts-ignore
-            if (data.choices?.[0]?.message?.images?.[0]?.image_url?.url) {
-                // @ts-ignore
-                imageUrl = data.choices[0].message.images[0].image_url.url;
-            } else {
-                const content = data.choices?.[0]?.message?.content || '';
-                // Extract URL from markdown (http or data:image)
-                const urlMatch = content.match(/(https?:\/\/[^\s)]+|data:image\/[a-zA-Z]+;base64,[^\s)]+)/);
-
-                if (urlMatch) {
-                    imageUrl = urlMatch[0];
-                } else {
-                    // Return the FULL JSON in the error so we can see what happened
-                    const debugData = JSON.stringify(data).substring(0, 500); // Limit length
-                    throw new Error(`Model returned no URL. Raw Response: ${debugData}`);
+        for (const tryModel of modelsToTry) {
+            try {
+                console.log(`API: Trying model: ${tryModel}`);
+                imageUrl = await generateWithModel(prompt, tryModel, apiKey);
+                if (imageUrl) {
+                    console.log(`API: Success with model: ${tryModel}`);
+                    break;
+                }
+            } catch (err) {
+                lastError = err instanceof Error ? err.message : String(err);
+                console.log(`API: Model ${tryModel} failed (${lastError.substring(0, 100)}), trying next...`);
+                // Only fallback on rate limits (429) or server errors (5xx)
+                if (!lastError.includes('429') && !lastError.includes('500') && !lastError.includes('502') && !lastError.includes('503')) {
+                    throw err; // Don't fallback on auth errors, bad requests, etc.
                 }
             }
-
-        } else {
-            // Standard Image API (Flux, DALL-E)
-            console.log('API: Routing to Image Generations for model:', selectedModel);
-            const response = await fetch('https://openrouter.ai/api/v1/images/generations', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`,
-                    'HTTP-Referer': 'https://cryptomafia-newsletter.local',
-                    'X-Title': 'Crypto Mafia Image Generator',
-                },
-                body: JSON.stringify({
-                    model: selectedModel,
-                    prompt: prompt,
-                    ...(selectedModel.includes('dall-e') ? { size: "1024x1024" } : {}),
-                    ...(selectedModel.includes('flux') ? { aspect_ratio: "16:9" } : {}),
-                }),
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`OpenRouter Image API error: ${response.status} - ${errorText}`);
-            }
-
-            const data = await response.json();
-            imageUrl = data.data?.[0]?.url;
         }
 
         if (!imageUrl) {
-            throw new Error('No image URL received from API');
+            throw new Error(`All models failed. Last error: ${lastError}`);
         }
 
-        return NextResponse.json({ success: true, imageUrl: imageUrl });
+        return NextResponse.json({ success: true, imageUrl });
 
     } catch (error) {
         console.error('Image Gen Error:', error);
