@@ -199,7 +199,7 @@ export async function curateNews(
     console.log(`[Curator] Newsletter items: ${candidateItems.length}`);
 
     // 2. FILL: Add news sites, blogs, social (2 per source, up to limit)
-    const TOTAL_LIMIT = 30;
+    const TOTAL_LIMIT = 45;
     const QUOTA_PER_NON_NEWSLETTER = 2;
 
     for (const [source, items] of itemsBySource) {
@@ -255,7 +255,7 @@ export async function curateNews(
 
             for (const [key, existing] of stories) {
                 const similarity = calculateSimilarity(raw.headline, existing.headline);
-                if (similarity > 0.35 && similarity > maxSimilarity) {
+                if (similarity > 0.55 && similarity > maxSimilarity) {
                     matchedKey = key;
                     maxSimilarity = similarity;
                 }

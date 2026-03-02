@@ -306,7 +306,29 @@ export default function Home() {
 
   function goToResearchPage() {
     // Persist current state before navigating
-    saveCuratedStories(stories);
+    // Include X items as CuratedStory objects so the research page can find them
+    const xStoriesForPersistence = xNews
+      .filter(item => selectedIds.has(`x_${item.id}`))
+      .map(item => ({
+        id: `x_${item.id}`,
+        headline: item.title,
+        summary: item.summary || item.title,
+        category: 'x_twitter',
+        baseScore: 0,
+        finalScore: 0,
+        entities: [],
+        originalUrl: item.url,
+        sources: ['X/Twitter'],
+        publishedAt: item.publishedAt || '',
+        crossSourceCount: 1,
+        boosts: [],
+      } as CuratedStory));
+
+    // Merge: existing stories + any selected X items not already in stories
+    const existingIds = new Set(stories.map(s => s.id));
+    const allStories = [...stories, ...xStoriesForPersistence.filter(x => !existingIds.has(x.id))];
+
+    saveCuratedStories(allStories);
     saveSelectedIds(Array.from(selectedIds));
     router.push('/research');
   }

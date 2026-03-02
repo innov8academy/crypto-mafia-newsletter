@@ -91,12 +91,13 @@ export async function GET() {
             if (seenNormalized.has(shortKey)) continue;
             
             // Also check word overlap with existing items
-            const words = new Set(normalized.split(' ').filter((w: string) => w.length > 3));
+            const wordsArr = normalized.split(' ').filter((w: string) => w.length > 3);
+            const words = new Set<string>(wordsArr);
             let isDupe = false;
             for (const seen of seenNormalized) {
-                const seenWords = new Set(seen.split(' ').filter((w: string) => w.length > 3));
+                const seenWords = new Set<string>(seen.split(' ').filter((w: string) => w.length > 3));
                 if (seenWords.size === 0 || words.size === 0) continue;
-                const overlap = [...words].filter(w => seenWords.has(w)).length;
+                const overlap = wordsArr.filter((w: string) => seenWords.has(w)).length;
                 if (overlap / Math.max(words.size, seenWords.size) > 0.5) {
                     isDupe = true;
                     break;
