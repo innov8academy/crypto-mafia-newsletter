@@ -32,7 +32,7 @@ import {
   loadCustomFeeds,
   saveCustomFeeds,
 } from '@/lib/storage';
-import { MoveRight, Sparkles, Check, Play, Search, Clock, ExternalLink, BarChart3, Layers, FileText, ListChecks, ArrowRight, RefreshCw, Trash2, Plus, Settings2, X } from 'lucide-react';
+import { MoveRight, Sparkles, Check, Play, Search, Clock, ExternalLink, BarChart3, Layers, FileText, ListChecks, ArrowRight, RefreshCw, Trash2, Plus, Settings2, X, Heart, Repeat2 } from 'lucide-react';
 import { addCost } from '@/lib/cost-tracker';
 
 interface RSSFeed {
@@ -105,10 +105,10 @@ export default function Home() {
     fetchXNews();
   }, []);
 
-  async function fetchXNews() {
+  async function fetchXNews(force?: boolean) {
     setXLoading(true);
     try {
-      const res = await fetch('/api/x-news');
+      const res = await fetch('/api/x-news', force ? { method: 'POST' } : {});
       const data = await res.json();
       if (data.items) {
         setXNews(data.items);
@@ -720,31 +720,37 @@ export default function Home() {
             {/* Main Feed */}
             <div className="col-span-8 flex flex-col h-full">
 
-              {/* X/Twitter Crypto News Section */}
-              {xNews.length > 0 && (
-                <div className="mb-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="bg-white text-black px-2 py-1 rounded-md font-bold text-sm leading-none">𝕏</span>
-                      <h2 className="font-display text-lg text-white tracking-tight">Trending on X</h2>
-                    </div>
-                    <span className="text-xs text-white/30 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">
-                      {xNews.length} posts
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="ml-auto text-white/30 hover:text-white text-xs h-7"
-                      onClick={() => fetchXNews()}
-                      disabled={xLoading}
-                    >
-                      <RefreshCw className={`w-3 h-3 mr-1 ${xLoading ? 'animate-spin' : ''}`} />
-                      Refresh
-                    </Button>
+              {/* X/Twitter Crypto News Section — always visible */}
+              <div className="mb-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="bg-white text-black px-2 py-1 rounded-md font-bold text-sm leading-none">𝕏</span>
+                    <h2 className="font-display text-lg text-white tracking-tight">Trending on X</h2>
                   </div>
+                  <span className="text-xs text-white/30 bg-white/5 px-2 py-0.5 rounded-full border border-white/5">
+                    {xNews.length} posts
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="ml-auto text-white/30 hover:text-white text-xs h-7"
+                    onClick={() => fetchXNews(true)}
+                    disabled={xLoading}
+                  >
+                    <RefreshCw className={`w-3 h-3 mr-1 ${xLoading ? 'animate-spin' : ''}`} />
+                    Refresh
+                  </Button>
+                </div>
+                {xNews.length === 0 ? (
+                  <div className="rounded-lg border border-white/5 bg-white/[0.02] p-6 text-center">
+                    <p className="text-white/30 text-sm">No X posts cached. Click Refresh to fetch trending crypto content.</p>
+                  </div>
+                ) : (
                   <div className="grid grid-cols-2 gap-3">
                     {xNews.map((item: any) => {
                       const isSelected = selectedIds.has(`x_${item.id}`);
+                      // Clean @handle prefix from title display
+                      const displayTitle = (item.title || '').replace(/^@\w+:\s*/, '');
                       return (
                         <a
                           key={item.id}
@@ -772,13 +778,27 @@ export default function Home() {
                               <p className={`text-sm font-medium leading-snug line-clamp-2 transition-colors ${
                                 isSelected ? 'text-amber-300' : 'text-white/80 group-hover:text-amber-300'
                               }`}>
-                                {item.title}
+                                {displayTitle}
                               </p>
-                              {item.postCount > 0 && (
-                                <p className="text-xs text-white/30 mt-1">
-                                  {item.postCount.toLocaleString()} posts
-                                </p>
-                              )}
+                              <div className="flex items-center gap-3 mt-1.5">
+                                {item.author && item.author !== 'X_Trending' && (
+                                  <span className="text-xs text-white/25">@{item.author}</span>
+                                )}
+                                {(item.likes > 0 || item.retweets > 0) && (
+                                  <div className="flex items-center gap-2 text-xs text-white/25">
+                                    {item.likes > 0 && (
+                                      <span className="flex items-center gap-0.5">
+                                        <Heart className="w-3 h-3" /> {item.likes > 999 ? `${(item.likes / 1000).toFixed(1)}k` : item.likes}
+                                      </span>
+                                    )}
+                                    {item.retweets > 0 && (
+                                      <span className="flex items-center gap-0.5">
+                                        <Repeat2 className="w-3 h-3" /> {item.retweets > 999 ? `${(item.retweets / 1000).toFixed(1)}k` : item.retweets}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                             <ExternalLink className="shrink-0 mt-1 w-3.5 h-3.5 text-white/20 group-hover:text-white/60 transition-colors" />
                           </div>
@@ -786,8 +806,8 @@ export default function Home() {
                       );
                     })}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               <div className="flex items-center justify-between mb-6">
                 <div>
